@@ -34,6 +34,24 @@ public class Test {
 		//numberOfBoomerangs(new int[][]{{0, 0}, {1, 0}, {2, 0}});//, {0, 1},{0,-1}});
 		//minMoves(new int[]{1, 2, 3, 5});
 	}
+	public static int[] twoSum2(int[] nums, int target) {
+		int mask = 2048;
+		int[] hash = new int[mask--];
+		int first = nums[0];
+		for (int i = 1; i < nums.length; i++) {
+			int diff = target - nums[i];
+			if (first + nums[i] == target) {
+				return new int[]{0, i};
+			} else {
+				int index = hash[diff & mask];
+				if (index > 0) {
+					return new int[]{i, index};
+				}
+			}
+			hash[nums[i] & mask] = i;
+		}
+		return new int[0];
+	}
 	public boolean rotateString(String A, String B) {
 		if(A.equals(B)){
 			return true;
