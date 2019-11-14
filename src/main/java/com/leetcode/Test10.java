@@ -31,10 +31,154 @@ public class Test10 {
 		//test.numMatchingSubseq( "abcde",new String[]{"a", "bb", "acd", "ace"});
 		//test.shiftingLetters("abc", new int[]{3, 5, 9});
 		//test.primePalindrome(930);
-		test.numSubarraysWithSum(new int[]{0, 0, 0, 0, 1}, 0);
-		test.reorderLogFiles(new String[]{
-			"w 7 2", "l 1 0", "6 066", "o aay", "e yal"});
-		
+		//test.minDeletionSize(new String[]{"xga", "xfb", "yfa"});
+		test.maxWidthRamp(new int[]{6, 0, 8, 2, 1, 5});
+	}
+	
+	public int maxWidthRamp(int[] A) {
+		int len = A.length;
+		int[] x = new int[len];
+		int[] y = new int[len];
+		int idx = 0, ret = 0;
+		x[0] = A[0];
+		for (int i = 1; i < len; i++) {
+			if (A[i] < x[idx]) {
+				idx++;
+				x[idx] = A[i];
+				y[idx] = i;
+			} else if (A[i] == x[idx]) {
+				ret = Math.max(ret, i - y[idx]);
+			} else {
+				int l = 0, r = idx, m;
+				while (l <= r) {
+					m = (l + r) >> 1;
+					if (x[m] > A[i]) {
+						l = m + 1;
+					} else if (x[m] == A[i]) {
+						l = m;
+						break;
+					} else {
+						r = m - 1;
+					}
+				}
+				ret = Math.max(ret, i - y[l]);
+			}
+		}
+		return ret;
+	}
+	
+	public int[] prisonAfterNDays(int[] cells, int N) {
+		ArrayList<Integer> list = new ArrayList<>();
+		int[] next;
+		int cur;
+		while (true) {
+			next = new int[8];
+			for (int i = 1; i < 7; i++) {
+				next[i] = cells[i - 1] == cells[i + 1] ? 1 : 0;
+			}
+			cur = 0;
+			for (int i = 0; i < 8; i++) {
+				cur <<= 1;
+				cur += next[i];
+			}
+			if (list.contains(cur)) {
+				break;
+			} else {
+				list.add(cur);
+			}
+			cells = next;
+		}
+		N %= list.size();
+		cur = list.get(N);
+		for (int i = 7; i >= 0; i--) {
+			next[i] = cur & 1;
+			cur >>= 1;
+		}
+		return next;
+	}
+	
+	public int minDeletionSize(String[] A) {
+		int len = A[0].length(), ret = 0;
+		boolean[] del = new boolean[len];
+		minDeletionSizeHelper(0, A, del, 0, A.length - 1);
+		for (boolean b : del) {
+			if (b) {
+				ret++;
+			}
+		}
+		return ret;
+	}
+	
+	private void minDeletionSizeHelper(int cur, String[] a, boolean[] del, int l, int r) {
+		int len = a[0].length();
+		while (cur < len && del[cur]) {
+			cur++;
+		}
+		if (cur == len) {
+			return;
+		}
+		char before = 'a' - 1, c;
+		boolean flag = false;
+		for (int i = l; i <= r; i++) {
+			c = a[i].charAt(cur);
+			if (c > before) {
+				before = c;
+			} else if (c == before) {
+				flag = true;
+			} else {
+				del[cur] = true;
+				minDeletionSizeHelper(cur + 1, a, del, l, r);
+				return;
+			}
+		}
+		if (flag) {
+			int left;
+			for (int i = l; i <= r; i++) {
+				left = i;
+				while (i < r && a[i].charAt(cur) == a[i + 1].charAt(cur)) {
+					i++;
+				}
+				if (i > left) {
+					minDeletionSizeHelper(cur + 1, a, del, left, i);
+				}
+			}
+		}
+	}
+	
+	public boolean canReorderDoubled(int[] A) {
+		int[] a = new int[100001];
+		int[] b = new int[100001];
+		for (int i : A) {
+			if (i < 0) {
+				a[-i]++;
+			} else {
+				b[i]++;
+			}
+		}
+		if ((b[0] & 1) == 1) {
+			return false;
+		}
+		int len = A.length;
+		int count = b[0];
+		for (int i = 1; i <= 50000; i++) {
+			if (a[i] > 0) {
+				if (a[2 * i] >= a[i]) {
+					a[2 * i] -= a[i];
+					count += 2 * a[i];
+				} else {
+					return false;
+				}
+			}
+			if (b[i] > 0) {
+				if (b[2 * i] >= b[i]) {
+					b[2 * i] -= b[i];
+					count += 2 * b[i];
+				} else {
+					return false;
+				}
+			}
+		}
+		return count == len;
 	}
 	
 	public String[] reorderLogFiles(String[] logs) {
@@ -70,7 +214,8 @@ public class Test10 {
 	}
 	
 	public int knightDialer(int N) {
-		int[][] n = new int[][]{{4, 6}, {6, 8}, {7, 9}, {4, 8}, {0, 3, 9}, {}, {0, 1, 7}, {2, 6},
+		int[][] n = new int[][]{{4, 6}, {6, 8}, {7, 9}, {4, 8}, {0, 3, 9}, {}, {0, 1, 7},
+			{2, 6},
 			{1, 3}, {2, 4}};
 		int[] ret = new int[10];
 		Arrays.fill(ret, 1);
@@ -726,7 +871,6 @@ public class Test10 {
 		}
 		return true;
 	}
-	
 	
 	public int carFleet1(int target, int[] position, int[] speed) {
 		TreeMap<Integer, Integer> map = new TreeMap<>();
@@ -1500,7 +1644,6 @@ public class Test10 {
 			random = _random;
 		}
 	}
-	
 	
 	Map<Node, Node> map = new HashMap();
 	

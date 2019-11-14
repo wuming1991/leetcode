@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeSet;
 
 /**
@@ -23,17 +24,98 @@ import java.util.TreeSet;
 public class Test {
 	
 	public static void main(String[] args) {
-		TreeNode treeNode = new TreeNode(3);
+		/*TreeNode treeNode = new TreeNode(3);
 		treeNode.left = new TreeNode(0);
 		treeNode.right = new TreeNode(20);
 		treeNode.right.left = new TreeNode(15);
 		//treeNode.right.left.left = new TreeNode(20);
 		treeNode.right.right = new TreeNode(7);
-		sumOfLeftLeaves(treeNode);
+		sumOfLeftLeaves(treeNode);*/
 		//minDiffInBST(treeNode);
 		//numberOfBoomerangs(new int[][]{{0, 0}, {1, 0}, {2, 0}});//, {0, 1},{0,-1}});
 		//minMoves(new int[]{1, 2, 3, 5});
+		Test test = new Test();
+		test.longestWPI(new int[]{9, 9, 6, 0, 6, 6, 9});
 	}
+	
+	public int longestWPI(int[] hours) {
+		int len = hours.length;
+		int[] count = new int[len];
+		
+		for (int i = 0; i < len; i++) {
+			count[i]=hours[i]>8?1:-1;
+		}
+		int[] ints = new int[len + 1];
+		for (int i = 0; i < len; i++) {
+			ints[i+1]=ints[i]+count[i];
+		}
+		Stack<Integer> stack = new Stack<>();
+		stack.push(0);
+		for (int i = 1; i <=len ; i++) {
+			if(ints[i]<ints[stack.peek()]){
+				stack.push(i);
+			}
+		}
+		int ret=0;
+		while (len>ret){
+			while (!stack.empty()&&ints[len]>ints[stack.peek()]){
+				ret=Math.max(ret,len-stack.pop());
+			}
+			len--;
+		}
+		return ret;
+	}
+	
+	TreeNode ret;
+	int maxDept = 0;
+	
+	public TreeNode lcaDeepestLeaves(TreeNode root) {
+		lcaDeepestLeavesHelper(root, 0);
+		return ret;
+	}
+	
+	private int lcaDeepestLeavesHelper(TreeNode root, int level) {
+		if (root.left == null && root.right == null) {
+			if (level > maxDept) {
+				ret = root;
+				maxDept = level;
+			}
+			return level;
+		}
+		int l = 0, r = 0;
+		if (root.left != null) {
+			l = lcaDeepestLeavesHelper(root.left, level + 1);
+		}
+		if (root.right != null) {
+			r = lcaDeepestLeavesHelper(root.right, level + 1);
+		}
+		if (l == r && l >= maxDept) {
+			ret = root;
+		}
+		return Math.max(r, l);
+	}
+	
+	public int bagOfTokensScore(int[] tokens, int P) {
+		Arrays.sort(tokens);
+		int l = 0, r = tokens.length - 1, ret = 0;
+		while (l < r) {
+			while (l <= r && P >= tokens[l]) {
+				P -= tokens[l];
+				ret++;
+				l++;
+			}
+			
+			if (l < r && ret > 0) {
+				P += tokens[r];
+				r--;
+				ret--;
+			} else {
+				break;
+			}
+		}
+		return ret;
+	}
+	
 	public static int[] twoSum2(int[] nums, int target) {
 		int mask = 2048;
 		int[] hash = new int[mask--];
@@ -52,35 +134,118 @@ public class Test {
 		}
 		return new int[0];
 	}
+	
+	public int[] relativeSortArray(int[] arr1, int[] arr2) {
+		int[] count = new int[1001];
+		for (int i : arr1) {
+			count[i]++;
+		}
+		int idx = 0;
+		for (int i : arr2) {
+			while (count[i] > 0) {
+				count[i]--;
+				arr1[idx] = i;
+				idx++;
+			}
+		}
+		for (int i = 0; i < 1001; i++) {
+			while (count[i] > 0) {
+				count[i]--;
+				arr1[idx] = i;
+				idx++;
+			}
+		}
+		return arr1;
+	}
+	
+	public int[] maxDepthAfterSplit1(String seq) {
+		int count = 0;
+		int len = seq.length();
+		int[] ret = new int[len];
+		for (int i = 0; i < len; i++) {
+			char c = seq.charAt(i);
+			if (c == '(') {
+				ret[i] = count;
+				count++;
+			} else {
+				count--;
+				ret[i] = count;
+			}
+		}
+		for (int i = 0; i < len; i++) {
+			ret[i] &= 1;
+		}
+		return ret;
+	}
+	
+	public int[] maxDepthAfterSplit(String seq) {
+		int len = seq.length();
+		int[] ret = new int[len];
+		char[] array = seq.toCharArray();
+		int start = 0;
+		int count = 0;
+		for (int i = 0; i < len; i++) {
+			if (array[i] == '(') {
+				count++;
+			} else {
+				count--;
+			}
+			if (count == 0) {
+				maxDepthAfterSplitHelper(ret, start, i, array, 0);
+				start = i + 1;
+			}
+		}
+		return ret;
+	}
+	
+	private void maxDepthAfterSplitHelper(int[] ret, int l, int r, char[] array, int val) {
+		ret[l] = val;
+		ret[r] = val;
+		int start = l + 1;
+		int count = 0;
+		for (int i = l + 1; i < r; i++) {
+			if (array[i] == '(') {
+				count++;
+			} else {
+				count--;
+			}
+			if (count == 0) {
+				maxDepthAfterSplitHelper(ret, start, i, array, val ^ 1);
+				start = i + 1;
+			}
+		}
+	}
+	
 	public boolean rotateString(String A, String B) {
-		if(A.equals(B)){
+		if (A.equals(B)) {
 			return true;
-		}else if(A.length()!=B.length()){
+		} else if (A.length() != B.length()) {
 			return false;
 		}
 		
 		char[] a = A.toCharArray();
 		char[] b = B.toCharArray();
 		int ex = B.indexOf(a[0]);
-		while (ex>0){
+		while (ex > 0) {
 			int i = 0;
 			for (; i < a.length; i++) {
-				if (a[i] != b[(ex+i)%b.length]) {
+				if (a[i] != b[(ex + i) % b.length]) {
 					break;
 				}
 			}
-			if(i==a.length){
+			if (i == a.length) {
 				return true;
-			}else{
-				ex=B.indexOf(a[0],ex);
+			} else {
+				ex = B.indexOf(a[0], ex);
 			}
 		}
 		return false;
 	}
+	
 	static int sumOfLeftLeaves;
 	
 	public static int sumOfLeftLeaves(TreeNode root) {
-		if (root.left == null&&root.right==null) {
+		if (root.left == null && root.right == null) {
 			sumOfLeftLeaves += root.val;
 			return root.val;
 		}
