@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * @ProjectName: study
@@ -40,7 +41,209 @@ public class Test12 {
 		List<String> list = Arrays.asList("un", "iq", "ue");
 		char c = 2660;
 		System.out.println(c);
-		test.rotatedDigits(10);
+		System.out.println(test.isGoodArrayHelper(6, 14));
+		
+		
+	}
+	
+	
+	
+	public String multiply(String num1, String num2) {
+		int len1 = num1.length();
+		int len2 = num2.length();
+		if (len1 < len2) {
+			return multiply(num2, num1);
+		}
+		char[] a = num1.toCharArray();
+		char[] b = num2.toCharArray();
+		int[] ret = new int[len1 + len2];
+		int t;
+		for (int i = len2 - 1; i >= 0; i--) {
+			t = 0;
+			if (b[i] == '0') {
+				continue;
+			}
+			for (int j = len1 - 1; j >= 0; j--) {
+				t = t + (a[j] - '0') * (b[i] - '0') + ret[i + j + 1];
+				ret[i + j + 1] = t % 10;
+				t /= 10;
+			}
+			ret[i] = t;
+		}
+		int i = 0;
+		while (ret[i] == 0) {
+			i++;
+		}
+		StringBuffer buffer = new StringBuffer();
+		while (i < len1 + len2) {
+			buffer.append(ret[i]);
+			i++;
+		}
+		return buffer.toString();
+	}
+	
+	public int swimInWater1(int[][] grid) {
+		int len = grid.length;
+		int l = Math.max(grid[len - 1][len - 1], grid[0][0]), r = len * len, m;
+		int[][] ds = {{1, 0}, {-1, 0}, {0, -1}, {0, 1}};
+		while (l < r) {
+			m = (l + r) >> 1;
+			if (swimInWater1Helper(grid, new boolean[len][len], 0, 0, m, ds)) {
+				r = m;
+			} else {
+				l = m + 1;
+			}
+		}
+		return l;
+	}
+	
+	private boolean swimInWater1Helper(int[][] grid, boolean[][] visited, int i, int j, int m,
+		int[][] ds) {
+		int len = grid.length;
+		if (i < 0 || j < 0 || i >= len || j >= len || grid[i][j] > m || visited[i][j]) {
+			return false;
+		}
+		visited[i][j] = true;
+		if (i == len - 1 && j == len - 1) {
+			return true;
+		}
+		for (int[] d : ds) {
+			if (swimInWater1Helper(grid, visited, i + d[0], j + d[1], m, ds)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public int swimInWater(int[][] grid) {
+		int len = grid.length;
+		int l = Math.max(grid[len - 1][len - 1], grid[0][0]), r = len * len, m;
+		int[][] ds = {{1, 0}, {-1, 0}, {0, -1}, {0, 1}};
+		while (l < r) {
+			m = (l + r) >> 1;
+			if (swimInWaterHelper(grid, m, ds)) {
+				r = m;
+			} else {
+				l = m + 1;
+			}
+		}
+		return l;
+	}
+	
+	private boolean swimInWaterHelper(int[][] grid, int m, int[][] ds) {
+		int len = grid.length;
+		int[] mem = new int[len * len * 2];
+		int idx = 2, bef = 0;
+		int x, y;
+		boolean[][] visited = new boolean[len][len];
+		visited[0][0] = true;
+		for (; bef < idx; bef += 2) {
+			for (int[] d : ds) {
+				x = mem[bef] + d[0];
+				y = mem[bef + 1] + d[1];
+				if (x < 0 || y < 0 || x >= len || y >= len || grid[x][y] > m || visited[x][y]) {
+					continue;
+				}
+				if (x == len - 1 && y == len - 1) {
+					return true;
+				}
+				visited[x][y] = true;
+				mem[idx++] = x;
+				mem[idx++] = y;
+			}
+		}
+		return false;
+	}
+	
+	
+	public boolean isGoodArray1(int[] nums) {
+		int x = nums[0], y;
+		for (int num : nums) {
+			while (num > 0) {
+				y = x % num;
+				x = num;
+				num = y;
+			}
+			if (x == 1) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean isGoodArray(int[] nums) {
+		int cur = nums[0];
+		for (int num : nums) {
+			cur = isGoodArrayHelper(num, cur);
+			if (cur == 1) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private int isGoodArrayHelper(int cur, int num) {
+		int t;
+		while (num != 0) {
+			t = cur % num;
+			cur = num;
+			num = t;
+		}
+		return cur;
+	}
+	
+	
+	public List<Integer> postorderTraversal1(TreeNode root) {
+		LinkedList<Integer> list = new LinkedList<>();
+		Stack<TreeNode> stack = new Stack<>();
+		stack.push(root);
+		TreeNode cur;
+		while (!stack.isEmpty()) {
+			cur = stack.pop();
+			list.addFirst(cur.val);
+			if (cur.left != null) {
+				stack.push(cur.left);
+			}
+			if (cur.right != null) {
+				stack.push(cur.right);
+			}
+		}
+		return list;
+	}
+	
+	public List<Integer> postorderTraversal(TreeNode root) {
+		ArrayList<Integer> ret = new ArrayList<>();
+		postorderTraversalHelper(root, ret);
+		return ret;
+	}
+	
+	private void postorderTraversalHelper(TreeNode root, ArrayList<Integer> ret) {
+		if (root == null) {
+			return;
+		}
+		postorderTraversalHelper(root.left, ret);
+		postorderTraversalHelper(root.right, ret);
+		ret.add(root.val);
+	}
+	
+	public int countVowelPermutation(int n) {
+		long[][] count = new long[n][5];
+		for (int i = 0; i < 5; i++) {
+			count[0][i] = 1;
+		}
+		int mod = 1000000007;
+		for (int i = 1; i < n; i++) {
+			count[i][0] = (count[i - 1][1] + count[i - 1][2] + count[i - 1][4]) % mod;
+			count[i][1] = (count[i - 1][0] + count[i - 1][2]) % mod;
+			count[i][2] = (count[i - 1][1] + count[i - 1][3]) % mod;
+			count[i][3] = count[i - 1][2];
+			count[i][4] = (count[i - 1][2] + count[i - 1][3]) % mod;
+		}
+		int ret = 0;
+		for (int i = 0; i < 5; i++) {
+			ret = (ret + (int) count[n - 1][i]) % mod;
+		}
+		return ret;
 	}
 	
 	int rotatedDigits = 0;
@@ -71,7 +274,7 @@ public class Test12 {
 			return false;
 		}
 		if (len == 0) {
-			while (cur>0) {
+			while (cur > 0) {
 				if (check[cur % 10]) {
 					rotatedDigits++;
 					break;
