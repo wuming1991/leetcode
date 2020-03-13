@@ -40,6 +40,7 @@ public class StreamChecker {
 				if (cur.child[t] == null) {
 					cur.child[t] = new Node();
 				} else if (cur.child[t].flag) {
+					cur = cur.child[t];
 					break;
 				}
 				cur = cur.child[t];
@@ -55,6 +56,9 @@ public class StreamChecker {
 	}
 	
 	private boolean search(Node root, int cur) {
+		if(cur<0){
+			return false;
+		}
 		Node node = root.child[arr[cur]];
 		if (node != null) {
 			return node.flag || search(node, cur - 1);
@@ -64,18 +68,37 @@ public class StreamChecker {
 	}
 	
 	public static void main(String[] args) {
-		StreamChecker streamChecker = new StreamChecker(new String[]{"cd", "f", "kl"});
-		streamChecker.query('a');          // 返回 false
-		streamChecker.query('b');          // 返回 false
-		streamChecker.query('c');          // 返回 false
-		streamChecker.query('d');          // 返回 true，因为 'cd' 在字词表中
-		streamChecker.query('e');          // 返回 false
-		streamChecker.query('f');          // 返回 true，因为 'f' 在字词表中
-		streamChecker.query('g');          // 返回 false
-		streamChecker.query('h');          // 返回 false
-		streamChecker.query('i');          // 返回 false
-		streamChecker.query('j');          // 返回 false
-		streamChecker.query('k');          // 返回 false
-		streamChecker.query('l');
+		StreamChecker streamChecker = new StreamChecker(new String[]{"ab","ba","aaab","abab","baa"});
+		streamChecker.query('a');
+		streamChecker.query('a');
+		streamChecker.query('a');
+		streamChecker.query('a');
+		streamChecker.query('a');
+		streamChecker.query('b');
+		streamChecker.query('a');
+		streamChecker.query('b');
+		streamChecker.query('a');
+		streamChecker.query('b');
+		streamChecker.query('b');
+		streamChecker.query('b');
+		streamChecker.query('a');
+		streamChecker.query('b');
+		streamChecker.query('a');
+		streamChecker.query('b');
+		streamChecker.query('b');
+		streamChecker.query('b');
+		streamChecker.query('b');
+		streamChecker.query('a');
+		streamChecker.query('b');
+		streamChecker.query('a');
+		streamChecker.query('b');
+		streamChecker.query('a');
+		streamChecker.query('a');
+		streamChecker.query('a');
+		streamChecker.query('b');
+		streamChecker.query('a');
+		streamChecker.query('a');
+		streamChecker.query('a');
+		
 	}
 }
