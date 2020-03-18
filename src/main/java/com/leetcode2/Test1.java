@@ -1,13 +1,17 @@
 package com.leetcode2;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -52,13 +56,777 @@ public class Test1 {
 		return ret;
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ParseException {
+		
 		Test1 test = new Test1();
-		test.largestMultipleOfThree(new int[]{8,6,7,1,0});
-		test.isPossible(new int[]{5, 8});
-		test.validateBinaryTreeNodes(4, new int[]{1, -1, 3, -1}, new int[]{2, -1, -1, -1});
-		//test.arrayRankTransform(new int[]{37, 12, 28, 9, 100, 56, 80, 5, 12, 12, 12, 12, 12});
+		test.longestValidParentheses(")()())(((((())))()()()((");
+		
 	}
+	//1370
+	public String sortString(String s) {
+		int[] count = new int[26];
+		int len = s.length();
+		char[] ret = new char[len];
+		for (int i = 0; i < len; i++) {
+			count[s.charAt(i)-'a']++;
+		}
+		int c=0;
+		while (c<len){
+			for (int i = 0; i < 26; i++) {
+				if(count[i]>0){
+					ret[c++]=(char)(i+'a');
+				}
+			}
+			for (int i = 26; i > 0; i--) {
+				if(count[i]>0){
+					ret[c++]=(char)(i+'a');
+				}
+			}
+		}
+		return new String(ret);
+	}
+	//面试题 01.06. 字符串压缩
+	public String compressString(String S) {
+		int len = S.length();
+		if(len==0){
+			return S;
+		}
+		char cur=S.charAt(0);
+		int count=0;
+		StringBuffer buffer = new StringBuffer();
+		for (char c : S.toCharArray()) {
+			if(c==cur){
+				count++;
+			}else{
+				buffer.append(cur);
+				buffer.append(count);
+				cur=c;
+				count=1;
+				if(buffer.length()+2>=len){
+					return S;
+				}
+			}
+		}
+		buffer.append(cur);
+		buffer.append(count);
+		if(buffer.length()>=len){
+			return S;
+		}else{
+			return buffer.toString();
+		}
+	}
+	//面试题 01.05. 一次编辑
+	public boolean oneEditAway(String first, String second) {
+		int l1 = first.length();
+		int l2 = second.length();
+		int c=0,i=0,j=0;
+		if(l1-l2==0){//替换或不变
+			for (; i < l1; i++) {
+				if(first.charAt(i)!=second.charAt(i)){
+					c++;
+				}
+				if(c>1){
+					return false;
+				}
+			}
+		}else if(l1-l2==-1){//插入
+			 if(l1==0){
+			 	return true;
+			 }
+			 while (i<l1&&first.charAt(i)==second.charAt(j)){
+			 	i++;j++;
+			 }
+			 j++;
+			 while (i<l1&&first.charAt(i)==second.charAt(j)){
+			 	i++;j++;
+			 }
+			 if(i<l1){
+			 	return false;
+			 }
+		}else if(l1-l2==1){//删除
+			 return oneEditAway(second,first);
+		}else{
+			return false;
+		}
+		return true;
+	}
+	//面试题 01.04. 回文排列
+	public boolean canPermutePalindrome(String s) {
+		int[] count = new int[26];
+		int len = s.length();
+		for (int i = 0; i < len; i++) {
+			count[s.charAt(i)-'a']++;
+		}
+		int c=0;
+		for (int i : count) {
+			c+=(i&1);
+			if(c>1){
+				return false;
+			}
+		}
+		return true;
+	}
+	//32
+	public int longestValidParentheses(String s) {
+		Stack<Integer> stack = new Stack<>();
+		int ret = 0;
+		int len = s.length();
+		char c;
+		stack.push(-1);
+		int start=-1;
+		for (int i = 0; i < len; i++) {
+			c = s.charAt(i);
+			if (c == '(') {
+				stack.push(i);
+			} else {
+				if(stack.peek()>=0){
+					stack.pop();
+					if(stack.peek()<0){
+						ret= Math.max(ret,i-start);
+					}else{
+						ret= Math.max(ret,i-stack.peek());
+					}
+				}else{
+					start=i;
+				}
+			}
+		}
+		return ret;
+	}
+	
+	public int countCharacters(String[] words, String chars) {
+		int[] count = new int[26];
+		for (char c : chars.toCharArray()) {
+			count[c - 'a']++;
+		}
+		char c;
+		int ret = 0;
+		for (String word : words) {
+			int length = word.length(), i = 0;
+			int[] copy = Arrays.copyOf(count, 26);
+			for (; i < length; i++) {
+				c = word.charAt(i);
+				if (copy[c - 'a'] > 0) {
+					copy[c - 'a']--;
+				} else {
+					break;
+				}
+			}
+			if (i == length) {
+				ret += length;
+			}
+		}
+		return ret;
+	}
+	
+	//1351
+	public int countNegatives(int[][] grid) {
+		int high = grid.length;
+		int len = grid[0].length;
+		int ret = 0, l, m, r;
+		for (int i = 0; i < high; i++) {
+			int[] ints = grid[i];
+			l = 0;
+			r = len - 1;
+			if (ints[l] < 0) {
+				ret += len;
+				continue;
+			}
+			while (l <= r) {
+				m = (l + r) / 2;
+				if (ints[m] >= 0) {
+					l = m + 1;
+				} else {
+					r = m - 1;
+				}
+			}
+			ret += len - l;
+		}
+		return ret;
+	}
+	
+	//1732
+	int longestZigZag = 0;
+	
+	public int longestZigZag(TreeNode root) {
+		if (root == null) {
+			return 0;
+		}
+		longestZigZagHelper(root.left, 0, 0);
+		longestZigZagHelper(root.right, 1, 0);
+		return longestZigZag;
+	}
+	
+	private void longestZigZagHelper(TreeNode root, int from, int count) {
+		if (root == null) {
+			longestZigZag = Math.max(longestZigZag, count);
+			return;
+		}
+		longestZigZagHelper(root.left, 0, from == 1 ? count + 1 : 0);
+		longestZigZagHelper(root.right, 1, from == 0 ? count + 1 : 0);
+	}
+	
+	int maxSumBST = 0;
+	
+	//1373
+	public int maxSumBST(TreeNode root) {
+		int[] ret = maxSumBSTHelper(root);
+		return maxSumBST;
+	}
+	
+	private int[] maxSumBSTHelper(TreeNode root) {
+		int[] ret = {root.val, root.val, root.val}, left, right;
+		if (root.left != null) {
+			left = maxSumBSTHelper(root.left);
+			if (left[1] >= ret[0]) {
+				ret = new int[]{Integer.MIN_VALUE, Integer.MAX_VALUE, -1};
+				//return ret;
+			} else {
+				ret[0] = left[0];
+				ret[2] += left[2];
+			}
+		}
+		if (root.right != null) {
+			right = maxSumBSTHelper(root.right);
+			if (ret[1] >= right[0]) {
+				ret = new int[]{Integer.MIN_VALUE, Integer.MAX_VALUE, -1};
+				//return ret;
+			} else {
+				ret[1] = right[1];
+				ret[2] += right[2];
+			}
+		}
+		if (ret[2] > maxSumBST) {
+			maxSumBST = ret[2];
+		}
+		return ret;
+	}
+	
+	//1375
+	public int numTimesAllBlue(int[] light) {
+		int blue = 0;
+		int len = light.length;
+		boolean[] flag = new boolean[len + 1];
+		int ret = 0;
+		for (int i = 0; i < len; i++) {
+			flag[light[i]] = true;
+			while (flag[blue]) {
+				blue++;
+			}
+			if (blue == i + 1) {
+				ret++;
+			}
+		}
+		return ret;
+	}
+	
+	//1379
+	public final TreeNode getTargetCopy(final TreeNode original, final TreeNode cloned,
+		final TreeNode target) {
+		LinkedList<Integer> list = new LinkedList<>();
+		boolean find = originalPath(list, original, target);
+		
+		TreeNode ret = cloned;
+		while (!list.isEmpty()) {
+			Integer x = list.removeLast();
+			if (x == 0) {
+				ret = ret.left;
+			} else {
+				ret = ret.right;
+			}
+		}
+		return ret;
+		
+	}
+	
+	private boolean originalPath(LinkedList<Integer> list, TreeNode root, TreeNode target) {
+		if (root == null) {
+			return false;
+		}
+		if (root == target) {
+			return true;
+		}
+		if (originalPath(list, root.left, target)) {
+			list.add(0);
+			return true;
+		}
+		if (originalPath(list, root.right, target)) {
+			list.add(1);
+			return true;
+		}
+		return false;
+	}
+	
+	//1380
+	public List<Integer> luckyNumbers(int[][] matrix) {
+		int high = matrix.length;
+		int[] min = new int[high];
+		int len = matrix[0].length;
+		int[] max = new int[len];
+		Arrays.fill(min, Integer.MAX_VALUE);
+		int x;
+		for (int i = 0; i < high; i++) {
+			for (int j = 0; j < len; j++) {
+				x = matrix[i][j];
+				min[i] = Math.min(x, min[i]);
+				max[j] = Math.max(x, max[j]);
+			}
+		}
+		HashSet<Integer> set = new HashSet<>();
+		ArrayList<Integer> list = new ArrayList<>();
+		for (int i : max) {
+			set.add(i);
+		}
+		for (int i : min) {
+			if (!set.add(i)) {
+				list.add(i);
+			}
+		}
+		return list;
+	}
+	
+	//1347
+	public int minSteps(String s, String t) {
+		int[] count = new int[26];
+		int len = s.length();
+		char c;
+		for (int i = 0; i < len; i++) {
+			c = s.charAt(i);
+			count[c - 'a']++;
+			c = t.charAt(i);
+			count[c - 'a']--;
+		}
+		int ret = 0;
+		for (int i : count) {
+			if (i > 0) {
+				ret += i;
+			}
+		}
+		return ret;
+	}
+	
+	//面试题28. 对称的二叉树
+	public boolean isSymmetric(TreeNode root) {
+		if (root == null) {
+			return true;
+		}
+		return isSymmetricHelper(root.left, root.right);
+	}
+	
+	private boolean isSymmetricHelper(TreeNode left, TreeNode right) {
+		if (left == null && right == null) {
+			return true;
+		} else if (left == null || right == null) {
+			return false;
+		}
+		return left.val == right.val && isSymmetricHelper(left.left, right.right)
+			&& isSymmetricHelper(left.right, right.left);
+	}
+	
+	//面试题56 - I. 数组中数字出现的次数
+	public int[] singleNumbers(int[] nums) {
+		int t = 0;
+		for (int num : nums) {
+			t ^= num;
+		}
+		int mask = 1;
+		while ((t & mask) == 0) {
+			mask <<= 1;
+		}
+		int a = 0;
+		for (int num : nums) {
+			if ((num & mask) > 0) {
+				a ^= num;
+			}
+		}
+		return new int[]{a, a ^ t};
+	}
+	
+	TreeNode lowestCommonAncestor;
+	
+	public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+		boolean[] result = lowestCommonAncestorHelper(root, p, q);
+		return lowestCommonAncestor;
+	}
+	
+	//面试题53 - II. 0～n-1中缺失的数字
+	public int missingNumber(int[] nums) {
+		int len = nums.length;
+		int l = 0, r = len, m;
+		while (l <= r) {
+			m = (l + r) / 2;
+			if (m == len) {
+				return m;
+			}
+			if (nums[m] == m) {
+				l = m + 1;
+			} else {
+				r = m - 1;
+			}
+		}
+		return l;
+	}
+	
+	private boolean[] lowestCommonAncestorHelper(TreeNode root, TreeNode p, TreeNode q) {
+		boolean[] ret = new boolean[2];
+		if (root == null) {
+			return ret;
+		}
+		if (root == p) {
+			ret[0] = true;
+		} else if (root == q) {
+			ret[1] = true;
+		}
+		boolean[] left = lowestCommonAncestorHelper(root.left, p, q);
+		boolean[] right = lowestCommonAncestorHelper(root.right, p, q);
+		ret[0] = ret[0] || left[0] || right[0];
+		ret[1] = ret[1] || left[1] || right[1];
+		if (lowestCommonAncestor == null && ret[0] && ret[1]) {
+			lowestCommonAncestor = root;
+		}
+		return ret;
+	}
+	//1345
+	
+	public int minJumps1(int[] arr) {
+		HashMap<Integer, Set<Integer>> map = new HashMap<>();
+		int len = arr.length;
+		Set<Integer> set, cur, next;
+		for (int i = 0; i < len; i++) {
+			if (map.containsKey(arr[i])) {
+				set = map.get(arr[i]);
+			} else {
+				set = new HashSet<>();
+				map.put(arr[i], set);
+			}
+			set.add(i);
+		}
+		boolean[] visit = new boolean[len];
+		visit[0] = true;
+		int ret = 0;
+		cur = new HashSet<>();
+		cur.add(0);
+		HashSet<Integer> same = new HashSet<>();
+		while (!visit[len - 1]) {
+			ret++;
+			next = new HashSet<>();
+			for (Integer c : cur) {
+				if (c > 0 && !visit[c - 1]) {
+					visit[c - 1] = true;
+					next.add(c - 1);
+				}
+				if (c + 1 < len && !visit[c + 1]) {
+					visit[c + 1] = true;
+					next.add(c + 1);
+				}
+				
+				Set<Integer> s = map.get(arr[c]);
+				if (s != null) {
+					for (Integer x : s) {
+						if (!visit[x]) {
+							visit[x] = true;
+							next.add(x);
+						}
+					}
+					map.remove(arr[c]);
+				}
+				
+			}
+			cur = next;
+		}
+		return ret;
+	}
+	
+	public int minJumps(int[] arr) {
+		int len = arr.length;
+		boolean[] visit = new boolean[len];
+		//Arrays.fill(arr, Integer.MAX_VALUE);
+		ArrayList<Integer> list = new ArrayList<>(), nlist;
+		HashMap<Integer, List<Integer>> map = new HashMap<>();
+		HashSet<Integer> set = new HashSet<>();
+		list.add(0);
+		visit[0] = true;
+		int ret = 0;
+		while (!visit[len - 1]) {
+			ret++;
+			nlist = new ArrayList<>();
+			set.clear();
+			for (Integer c : list) {
+				if (c > 0 && !visit[c - 1]) {
+					visit[c - 1] = true;
+					nlist.add(c - 1);
+				}
+				if (c + 1 < len && !visit[c + 1]) {
+					nlist.add(c + 1);
+					visit[c + 1] = true;
+				}
+				set.add(arr[c]);
+			}
+			for (int i = 0; i < len; i++) {
+				if (!visit[i] && set.contains(arr[i])) {
+					visit[i] = true;
+					nlist.add(i);
+				}
+			}
+			list = nlist;
+		}
+		return ret;
+	}
+	
+	//1340
+	public int maxJumps(int[] arr, int d) {
+		int len = arr.length;
+		int ret = 0;
+		int[] count = new int[len];
+		for (int i = 0; i < len; i++) {
+			if (count[i] == 0) {
+				count[i] = maxJumpsHelper(i, arr, count, d);
+			}
+			ret = Math.max(ret, count[i]);
+		}
+		return ret;
+	}
+	
+	private int maxJumpsHelper(int c, int[] arr, int[] count, int d) {
+		int ret = 0;
+		int len = arr.length;
+		if (count[c] > 0) {
+			return count[c];
+		}
+		boolean l = false, r = false;
+		for (int i = 1; i <= d; i++) {
+			if (!l) {
+				if (c - i >= 0 && arr[c] > arr[c - i]) {
+					ret = Math.max(ret, 1 + maxJumpsHelper(c - i, arr, count, d));
+				} else {
+					l = true;
+				}
+			}
+			if (!r) {
+				if (c + i < len && arr[c] > arr[c + i]) {
+					ret = Math.max(ret, 1 + maxJumpsHelper(c + i, arr, count, d));
+				} else {
+					r = true;
+				}
+			}
+			if (l && r) {
+				break;
+			}
+		}
+		count[c] = ret;
+		return ret;
+	}
+	
+	//1329
+	public int[][] diagonalSort(int[][] mat) {
+		HashMap<Integer, List<Integer>> map = new HashMap<>();
+		int high = mat.length;
+		int len = mat[0].length;
+		List<Integer> list;
+		for (int i = 0; i < high; i++) {
+			for (int j = 0; j < len; j++) {
+				if (map.containsKey(i - j)) {
+					list = map.get(i - j);
+				} else {
+					list = new ArrayList<>();
+					map.put(i - j, list);
+				}
+				list.add(mat[i][j]);
+			}
+		}
+		for (int i = 1; i < high; i++) {
+			int x = i, y = 0;
+			list = map.get(x - y);
+			list.sort((a, b) -> (a - b));
+			for (Integer c : list) {
+				mat[x][y] = c;
+				x++;
+				y++;
+			}
+		}
+		for (int j = 0; j < len; j++) {
+			int x = 0, y = j;
+			list = map.get(x - y);
+			list.sort((a, b) -> (a - b));
+			for (Integer c : list) {
+				mat[x][y] = c;
+				x++;
+				y++;
+			}
+		}
+		return mat;
+	}
+	
+	//
+	public String generateTheString(int n) {
+		char[] chars = new char[n];
+		Arrays.fill(chars, 'a');
+		if ((n & 1) != 0) {
+			chars[0] = 'b';
+		}
+		return new String(chars);
+	}
+	
+	//1339
+	public int maxProduct(TreeNode root) {
+		HashSet<Long> set = new HashSet<>();
+		long total = maxProductHelper(root, set);
+		long ret = 0, x;
+		long mod = 1000000007;
+		for (long i : set) {
+			x = (total - i) * i;
+			if (ret < x) {
+				ret = x;
+			}
+		}
+		
+		return (int) (ret % mod);
+	}
+	
+	private long maxProductHelper(TreeNode root, Set<Long> set) {
+		if (root == null) {
+			return 0;
+		}
+		long val = root.val + maxProductHelper(root.left, set) + maxProductHelper(root.right, set);
+		set.add(val);
+		return val;
+		
+		
+	}
+	
+	//1376
+	public int numOfMinutes(int n, int headID, int[] manager, int[] informTime) {
+		int[] cost = new int[n];
+		int ret = 0;
+		for (int i = 0; i < n; i++) {
+			if (cost[i] == 0 && i != headID) {
+				cost[i] = numOfMinutesHelper(manager[i], manager, informTime, cost);
+			}
+			ret = Math.max(ret, cost[i]);
+		}
+		return ret;
+	}
+	
+	private int numOfMinutesHelper(int i, int[] manager, int[] informTime, int[] cost) {
+		if (i < 0) {
+			return 0;
+		}
+		if (cost[i] > 0) {
+			return cost[i] + informTime[i];
+		}
+		cost[i] = numOfMinutesHelper(manager[i], manager, informTime, cost);
+		return informTime[i] + cost[i];
+	}
+	
+	int minCost;
+	
+	//1368:会超时
+	public int minCost(int[][] grid) {
+		int high = grid.length;
+		int len = grid[0].length;
+		minCost = high + len - 1;
+		int[][] ds = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+		boolean[][] mem = new boolean[high][len];
+		mem[0][0] = true;
+		minCostHelper(0, 0, 0, grid, high - 1, len - 1, ds, mem);
+		return minCost;
+	}
+	
+	private void minCostHelper(int i, int j, int cost, int[][] grid, int ti, int tj, int[][] ds,
+		boolean[][] mem) {
+		if (i == ti && j == tj) {
+			minCost = Math.min(minCost, cost);
+			return;
+		} else if (cost >= minCost) {
+			return;
+		}
+		int cur = grid[i][j] - 1, ni, nj;
+		for (int k = 0; k < 4; k++) {
+			ni = i + ds[k][0];
+			nj = j + ds[k][1];
+			if (ni > ti || nj > tj || ni < 0 || nj < 0 || mem[ni][nj]) {
+				continue;
+			} else {
+				mem[ni][nj] = true;
+				minCostHelper(ni, nj, cost + (cur == k ? 0 : 1), grid, ti, tj, ds, mem);
+				mem[ni][nj] = false;
+			}
+		}
+	}
+	
+	
+	//1358
+	public int numberOfSubstrings(String s) {
+		int[] count = new int[3];
+		int len = s.length();
+		int l = 0, ret = 0;
+		for (int i = 0; i < len; i++) {
+			count[s.charAt(i) - 'a']++;
+			while (count[0] > 0 && count[1] > 0 && count[2] > 0) {
+				ret += len - i;
+				count[s.charAt(l) - 'a']--;
+				l++;
+			}
+		}
+		return ret;
+	}
+	
+	//1366
+	public String rankTeams(String[] votes) {
+		HashMap<Character, int[]> map = new HashMap<>();
+		int len = votes.length;
+		char[] array = votes[0].toCharArray();
+		int length = array.length;
+		int[][] mem = new int[length][28];
+		for (int i = 0; i < length; i++) {
+			map.put(array[i], mem[i]);
+			mem[i][27] = 'Z' - array[i];
+		}
+		int[] ints;
+		for (int i = 0; i < len; i++) {
+			array = votes[i].toCharArray();
+			for (int j = 0; j < length; j++) {
+				ints = map.get(array[j]);
+				//ints[0]+=length-j;
+				ints[j + 1]++;
+			}
+		}
+		Arrays.sort(mem, (a, b) -> {
+			int i = 0;
+			while (a[i] == b[i]) {
+				i++;
+			}
+			return b[i] - a[i];
+		});
+		StringBuffer buffer = new StringBuffer();
+		for (int[] cur : mem) {
+			buffer.append((char) ('Z' - cur[27]));
+		}
+		return buffer.toString();
+	}
+	
+	//1365
+	public int[] smallerNumbersThanCurrent(int[] nums) {
+		int[] count = new int[101];
+		for (int num : nums) {
+			count[num]++;
+		}
+		int last = count[0], t;
+		count[0] = 0;
+		for (int i = 1; i < 101; i++) {
+			t = count[i];
+			count[i] = last;
+			last += t;
+		}
+		int len = nums.length;
+		int[] ret = new int[len];
+		for (int i = 0; i < len; i++) {
+			ret[i] = count[nums[i]];
+		}
+		return ret;
+		
+	}
+	
 	//1363
 	public String largestMultipleOfThree(int[] digits) {
 		int[] count = new int[10];
@@ -74,7 +842,7 @@ public class Test1 {
 		if (sum % 3 != 0) {
 			int i = 1;
 			for (i = 1; i <= c; i++) {
-				if (largestMultipleOfThreeHelper(count, 3-sum % 3, i)) {
+				if (largestMultipleOfThreeHelper(count, 3 - sum % 3, i)) {
 					break;
 				}
 			}
@@ -88,7 +856,8 @@ public class Test1 {
 		StringBuffer buffer = new StringBuffer();
 		for (int i = 9; i > 0; i--) {
 			while (count[i] > 0) {
-				buffer.append(i);count[i]--;
+				buffer.append(i);
+				count[i]--;
 			}
 		}
 		if (count[0] > 0) {
@@ -105,13 +874,13 @@ public class Test1 {
 	}
 	
 	private boolean largestMultipleOfThreeHelper(int[] count, int sum, int l) {
-		if(l==0){
-			return sum%3==0;
+		if (l == 0) {
+			return sum % 3 == 0;
 		}
 		for (int j = 1; j <= 9; j++) {
-			if(count[j]>0){
+			if (count[j] > 0) {
 				count[j]--;
-				if(largestMultipleOfThreeHelper(count,sum+j,l-1)){
+				if (largestMultipleOfThreeHelper(count, sum + j, l - 1)) {
 					return true;
 				}
 				count[j]++;
