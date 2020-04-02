@@ -1,19 +1,25 @@
 package com.leetcode2;
 
+import com.google.common.collect.ForwardingIterator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.Semaphore;
+import javax.lang.model.element.VariableElement;
+import sun.security.util.Length;
 
 /**
  * @ProjectName: study
@@ -56,116 +62,854 @@ public class Test1 {
 		return ret;
 	}
 	
+	private static String fileA = "A文件";
+	private static String filedB = "B文件";
+	
 	public static void main(String[] args) throws ParseException {
-		
 		Test1 test = new Test1();
-		test.longestValidParentheses(")()())(((((())))()()()((");
+		ListNode listNode = new ListNode(1);
+		listNode.next=new ListNode(2);
+		//listNode.next.next=new ListNode(2);
+		//listNode.next.next.next=new ListNode(1);
+		//listNode.next.next.next.next=new ListNode(1);
+		int[] ints = {1,2,3,4,5};
+		List list = Arrays.asList(ints);
+		System.out.println("list'size：" + list.size());
+		Integer[] x = {1,2,3,4,5};
+		List xl = Arrays.asList(x);
+		System.out.println("list'size：" + xl.size());
+		test.isPalindrome(listNode);
+		test.minCost1(new int[][]{{1, 1, 3}, {3, 2, 2}, {1, 1, 4}});
+		test.maxValueAfterReverse(new int[]{2, 3, 1, 5, 4});
+	}
+	
+	//面试题 02.06. 回文链表
+	public boolean isPalindrome(ListNode head) {
+		ListNode f = head, s = head, x = null, t;
+		if(f==null||f.next==null){
+			return true;
+		}
+		while (f != null) {
+			t = s;
+			if (f.next == null) {
+				s = s.next;
+				break;
+			} else {
+				f = f.next.next;
+			}
+			s = s.next;
+			t.next = x;
+			x = t;
+		}
+		while (s != null) {
+			if (s.val != x.val) {
+				return false;
+			}
+			s = s.next;
+			x = x.next;
+		}
+		return true;
+	}
+	
+	//面试题 02.04. 分割链表
+	public ListNode partition(ListNode head, int x) {
+		ListNode a = new ListNode(0), at = a;
+		ListNode b = new ListNode(0), bt = b;
+		while (head != null) {
+			if (head.val < x) {
+				at.next = head;
+				at = at.next;
+			} else {
+				bt.next = head;
+				bt = bt.next;
+			}
+			head = head.next;
+		}
+		at.next = b.next;
+		bt.next = null;
+		return a.next;
+	}
+	
+	//面试题 02.03. 删除中间节点
+	public void deleteNode(ListNode node) {
+		if (node.next == null) {
+			node = null;
+		} else {
+			node.next = node.next.next;
+		}
 		
 	}
+	
+	//面试题 02.02. 返回倒数第 k 个节点
+	public int kthToLast(ListNode head, int k) {
+		ListNode f = head, s = f;
+		while (k > 0) {
+			f = f.next;
+			k--;
+		}
+		while (f != null) {
+			f = f.next;
+			s = s.next;
+		}
+		return s.val;
+	}
+	
+	//面试题 01.09. 字符串轮转
+	public boolean isFlipedString1(String s1, String s2) {
+		if (s1.length() != s2.length()) {
+			return false;
+		}
+		String s = s1 + s1;
+		return s.contains(s2);
+	}
+	
+	public boolean isFlipedString(String s1, String s2) {
+		int len = s1.length();
+		if (len != s2.length()) {
+			return false;
+		}
+		if (s1.equals(s2)) {
+			return true;
+		}
+		int l, r;
+		for (int i = 1; i < len; i++) {
+			l = 0;
+			r = i;
+			while (l < len && s1.charAt(l) == s2.charAt(r)) {
+				l++;
+				r++;
+				if (r == len) {
+					r -= len;
+				}
+			}
+			if (l == len) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	//999
+	public int numRookCaptures(char[][] board) {
+		int x = 0, y = 0;
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				if (board[i][j] == 'R') {
+					x = i;
+					y = j;
+					break;
+				}
+			}
+			if (board[x][y] == 'R') {
+				break;
+			}
+		}
+		int cx, cy, ret = 0;
+		for (int[] d : ds) {
+			cx = x + d[0];
+			cy = y + d[1];
+			while (cx >= 0 && cy >= 0 && cx < 8 && cy < 8 && board[cx][cy] == '.') {
+				cx += d[0];
+				cy += d[1];
+			}
+			if (cx >= 0 && cy >= 0 && cx < 8 && cy < 8 && board[cx][cy] == 'p') {
+				ret++;
+			}
+		}
+		return ret;
+	}
+	
+	//面试题 08.05. 递归乘法
+	public int multiply(int A, int B) {
+		if (A == 1) {
+			return B;
+		}
+		if (((A + 1) >> 1) > (A >> 1)) {
+			return B + multiply(A >> 1, B << 1);
+		} else {
+			return multiply(A >> 1, B << 1);
+		}
+	}
+	
+	public int multiply1(int A, int B) {
+		int ret = 0;
+		while (A > 1) {
+			if ((A & 1) == 1) {
+				ret += B;
+				A >>= 1;
+				B <<= 1;
+			} else {
+				A >>= 1;
+				B <<= 1;
+			}
+		}
+		return ret + B;
+	}
+	
+	//1368
+	public int minCost1(int[][] grid) {
+		int high = grid.length;
+		int len = grid[0].length;
+		boolean[][] min = new boolean[high][len];
+		ArrayList<Integer> list = new ArrayList<>(), next = new ArrayList<>();
+		next.add(0);
+		int cost = 0;
+		min[0][0] = true;
+		while (true) {
+			for (Integer cur : next) {
+				//将当前所在点无损到达的点加入list
+				minCost1Helper(cur / 1000, cur % 1000, list, grid, min);
+			}
+			if (min[high - 1][len - 1]) {
+				return cost;
+			}
+			cost++;
+			list.addAll(next);
+			next.clear();
+			for (Integer cur : list) {
+				//添加可达点周边一步可达点到next
+				minCost1Helper2(cur / 1000, cur % 1000, next, min);
+			}
+			if (min[high - 1][len - 1]) {
+				return cost;
+			}
+			list.clear();
+		}
+		
+	}
+	
+	private void minCost1Helper2(int i, int j, ArrayList<Integer> next, boolean[][] visit) {
+		int ni, nj;
+		for (int[] d : dds) {
+			ni = i + d[0];
+			nj = j + d[1];
+			if (ni < 0 || nj < 0 || ni >= visit.length || nj >= visit[0].length || visit[ni][nj]) {
+				continue;
+			}
+			visit[ni][nj] = true;
+			next.add(ni * 1000 + nj);
+		}
+		
+	}
+	
+	int[][] dds = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+	
+	private void minCost1Helper(int i, int j, ArrayList<Integer> list, int[][] grid, boolean[][] min
+	) {
+		int[] d;
+		int high = grid.length;
+		int len = grid[0].length;
+		while (true) {
+			d = dds[grid[i][j] - 1];
+			i = i + d[0];
+			j = j + d[1];
+			if (i < 0 || j < 0 || i >= high || j >= len || min[i][j]) {
+				return;
+			}
+			list.add(i * 1000 + j);
+			min[i][j] = true;
+		}
+	}
+	
+	//1330
+	public int maxValueAfterReverse1(int[] nums) {
+		int ret = 0;
+		int len = nums.length;
+		for (int i = 0; i < len - 1; i++) {
+			ret += Math.abs(nums[i] - nums[i + 1]);
+		}
+		if (ret == 0) {
+			return ret;
+		}
+		int hmin = Integer.MIN_VALUE;
+		int lmax = Integer.MAX_VALUE;
+		for (int i = 0; i < len - 1; i++) {
+			hmin = Math.max(hmin, Math.min(nums[i], nums[i + 1]));
+			lmax = Math.min(lmax, Math.max(nums[i], nums[i + 1]));
+		}
+		int emax = 0;
+		for (int i = 1; i < len - 1; i++) {
+			emax = Math
+				.max(emax, Math.abs(nums[0] - nums[i + 1]) - Math.abs(nums[i] - nums[i + 1]));
+			emax = Math
+				.max(emax, Math.abs(nums[i - 1] - nums[len - 1]) - Math.abs(nums[i] - nums[i - 1]));
+		}
+		return ret + Math.max(emax, 2 * (hmin - lmax));
+	}
+	
+	//1330 超时
+	public int maxValueAfterReverse(int[] nums) {
+		int len = nums.length;
+		int[] diff = new int[len - 1];
+		int o = 0, t = 0;
+		for (int i = 0; i < len - 1; i++) {
+			t = Math.abs(nums[i] - nums[i + 1]);
+			o += t;
+			diff[i] = t;
+		}
+		int ret = o;
+		if (ret == 0) {
+			return ret;
+		}
+		for (int i = 1; i < len - 1; i++) {
+			t = Math.abs(nums[0] - nums[i + 1]) - diff[i];
+			ret = Math.max(ret, o + t);
+			t = Math.abs(nums[i - 1] - nums[len - 1]) - diff[i - 1];
+			ret = Math.max(ret, o + t);
+		}
+		for (int i = 1; i < len; i++) {
+			for (int j = i + 1; j < len - 1; j++) {
+				t = Math.abs(nums[i] - nums[j + 1]) - diff[j];
+				t += Math.abs(nums[i - 1] - nums[j]) - diff[i - 1];
+				ret = Math.max(ret, o + t);
+			}
+			
+		}
+		return ret;
+	}
+	
+	public int removePalindromeSub(String s) {
+		int l = 0, r = s.length() - 1;
+		if (r < 0) {
+			return 0;
+		}
+		while (l <= r && s.charAt(l) == s.charAt(r)) {
+			l++;
+			r--;
+		}
+		if (l > r) {
+			return 1;
+		} else {
+			return 2;
+		}
+	}
+	
+	public int[] te(int[] array1, int[] array2) {
+		ArrayList<Integer> list = new ArrayList<>();
+		int i = 0, j = 0;
+		int l1 = array1.length;
+		int l2 = array2.length;
+		while (i < l1 && j < l2) {
+			if (array1[i] == array2[j]) {
+				list.add(array1[i]);
+				i++;
+				j++;
+			} else if (array1[i] < array2[j]) {
+				i++;
+			} else {
+				j++;
+			}
+		}
+		i = 0;
+		int[] ret = new int[list.size()];
+		for (Integer integer : list) {
+			ret[i++] = integer;
+		}
+		return ret;
+	}
+	
+	public void test() {
+		char[] array = "aaaaaaad".toCharArray();
+		int len = array.length;
+		int[] mem = new int[len];
+		//mem[0]=-1;
+		for (int i = 1, j = 0; i < len; i++) {
+			while (j > 0 && array[i] != array[j]) {
+				j = mem[j - 1];
+			}
+			if (array[i] == array[j]) {
+				j++;
+			}
+			mem[i] = j;
+		}
+	}
+	
+	//1367有问题kmp算法
+	public boolean isSubPath(ListNode head, TreeNode root) {
+		ArrayList<Integer> list = new ArrayList<>();
+		ListNode t = head;
+		while (t != null) {
+			list.add(t.val);
+			t = t.next;
+		}
+		int size = list.size();
+		int[] mem = new int[size];
+		for (int i = 1, j = 0; i < size; i++) {
+			while (j > 0 && !list.get(i).equals(list.get(j))) {
+				j = mem[j - 1];
+			}
+			if (list.get(i).equals(list.get(j))) {
+				j++;
+			}
+			mem[i] = j;
+		}
+		return isSubPathHelper(list, 0, root, mem);
+	}
+	
+	private boolean isSubPathHelper(ArrayList<Integer> list, int cur, TreeNode root, int[] mem) {
+		if (cur >= mem.length) {
+			return true;
+		} else if (root == null) {
+			return false;
+		}
+		if (root.val == list.get(cur)) {
+			return isSubPathHelper(list, cur + 1, root.left, mem) || isSubPathHelper(list, cur + 1,
+				root.right, mem);
+		} else {
+			if (cur == 0) {
+				return isSubPathHelper(list, 0, root.left, mem) || isSubPathHelper(list, 0,
+					root.right, mem);
+			} else {
+				return isSubPathHelper(list, mem[cur - 1], root, mem);
+			}
+		}
+		
+	}
+	
+	
+	public double angleClock(int hour, int minutes) {
+		double m = minutes * 6;
+		double h = (double) hour * 30 + (double) 30 * minutes / 60;
+		double ret = Math.abs(h - m);
+		if (ret > 180) {
+			ret = 360 - ret;
+		}
+		return ret;
+	}
+	
+	//1343
+	public int numOfSubarrays(int[] arr, int k, int threshold) {
+		int t = k * threshold, c = 0, ret = 0;
+		for (int i = 0; i < k - 1; i++) {
+			c += arr[i];
+		}
+		int len = arr.length;
+		for (int i = k - 1; i < len; i++) {
+			c += arr[i];
+			if (c >= t) {
+				ret++;
+			}
+			c -= arr[i - k + 1];
+		}
+		return ret;
+	}
+	
+	//面试题 17.16. 按摩师
+	public int massage(int[] nums) {
+		int len = nums.length;
+		if (len == 0) {
+			return 0;
+		}
+		int a = nums[0];
+		if (len == 1) {
+			return a;
+		}
+		int b = Math.max(nums[0], nums[1]), t;
+		if (len == 2) {
+			return b;
+		}
+		for (int i = 2; i < len; i++) {
+			t = Math.max(b, a + nums[i]);
+			a = b;
+			b = t;
+		}
+		return Math.max(a, b);
+	}
+	
+	//1392
+	public String longestPrefix2(String s) {
+		int len = s.length();
+		int[] mem = new int[len];
+		for (int i = 1, j = 0; i < len; i++) {
+			while (j > 0 && s.charAt(j) != s.charAt(i)) {
+				j = mem[j - 1];
+			}
+			if (s.charAt(j) == s.charAt(i)) {
+				j++;
+			}
+			mem[i] = j;
+		}
+		return s.substring(0, mem[len - 1]);
+	}
+	
+	public String longestPrefix1(String s) {
+		int[] lc = new int[26];
+		char[] array = s.toCharArray();
+		for (char c : array) {
+			lc[c - 'a']++;
+		}
+		int[] rc = Arrays.copyOf(lc, 26);
+		int len = array.length;
+		for (int i = 0; i < len; i++) {
+			lc[array[i] - 'a']--;
+			rc[array[len - i - 1] - 'a']--;
+			if (Arrays.equals(lc, rc)) {
+				if (longestPrefixHelper(s, i + 1)) {
+					return s.substring(i + 1);
+				}
+			}
+		}
+		return "";
+	}
+	
+	public String longestPrefix(String s) {
+		char c = s.charAt(0);
+		int next = s.indexOf(c, 1);
+		while (next > 0) {
+			if (longestPrefixHelper(s, next)) {
+				return s.substring(next);
+			}
+			next = s.indexOf(c, next + 1);
+		}
+		return "";
+	}
+	
+	private boolean longestPrefixHelper(String s, int next) {
+		int i = 0;
+		int len = s.length();
+		for (int j = next; j < len; j++, i++) {
+			if (s.charAt(i) != s.charAt(j)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	//1387
+	public int getKth(int lo, int hi, int k) {
+		int[] coun = new int[hi + 1];
+		Arrays.fill(coun, -1);
+		coun[1] = 0;
+		int[][] ret = new int[hi - lo + 1][2];
+		for (int i = lo; i <= hi; i++) {
+			if (coun[i] < 0) {
+				coun[i] = getKthHelper(i, coun, hi);
+			}
+			ret[i - lo][0] = i;
+			ret[i - lo][1] = coun[i];
+		}
+		Arrays.sort(ret, (a, b) -> {
+			if (a[1] == b[1]) {
+				return a[0] - b[0];
+			} else {
+				return a[1] - b[1];
+			}
+		});
+		return ret[k - 1][0];
+	}
+	
+	private int getKthHelper(int i, int[] count, int hi) {
+		if (i == 1) {
+			return 0;
+		}
+		int n;
+		if ((i & 1) == 1) {
+			n = 3 * i + 1;
+		} else {
+			n = i >> 1;
+		}
+		if (n <= hi) {
+			count[n] = getKthHelper(n, count, hi);
+			return 1 + count[n];
+		} else {
+			return 1 + getKthHelper(n, count, hi);
+		}
+	}
+	
+	//1391
+	public boolean hasValidPath(int[][] grid) {
+		int len = grid.length;
+		int high = grid[0].length;
+		boolean[][] visited = new boolean[len][high];
+		visited[0][0] = true;
+		nextv = new List[4];
+		nextv[0] = Arrays.asList(2, 3, 4);
+		nextv[1] = Arrays.asList(2, 5, 6);
+		nextv[2] = Arrays.asList(1, 3, 5);
+		nextv[3] = Arrays.asList(1, 4, 6);
+		return hasValidPathHelper(0, 0, grid, len - 1, high - 1, visited);
+	}
+	
+	//上,下,右,左
+	int[][] ds = {{-1, 0}, {1, 0}, {0, 1}, {0, -1}};
+	int[][] next = {{}, {2, 3}, {0, 1}, {3, 1}, {1, 2}, {0, 3}, {0, 2}};
+	List<Integer>[] nextv;
+	
+	private boolean hasValidPathHelper(int i, int j, int[][] grid, int ti, int tj,
+		boolean[][] visited) {
+		if (i == ti && j == tj) {
+			return true;
+		}
+		int c = grid[i][j], ni, nj, nv;
+		for (int n : next[c]) {
+			ni = i + ds[n][0];
+			nj = j + ds[n][1];
+			if (ni < 0 || nj < 0 || ni > ti || nj > tj || visited[ni][nj]) {
+				continue;
+			}
+			nv = grid[ni][nj];
+			if (nextv[n].contains(nv)) {
+				visited[ni][nj] = true;
+				if (hasValidPathHelper(ni, nj, grid, ti, tj, visited)) {
+					return true;
+				}
+				visited[ni][nj] = false;
+			}
+		}
+		return false;
+	}
+	
+	//1389
+	public int[] createTargetArray(int[] nums, int[] index) {
+		int c;
+		int len = index.length;
+		for (int i = 1; i < len; i++) {
+			c = index[i];
+			for (int j = 0; j < i; j++) {
+				if (index[j] >= c) {
+					index[j]++;
+				}
+			}
+		}
+		int[] ret = new int[len];
+		for (int i = 0; i < len; i++) {
+			ret[index[i]] = nums[i];
+		}
+		return ret;
+	}
+	
+	//面试题47. 礼物的最大价值
+	public int maxValue(int[][] grid) {
+		int high = grid.length;
+		int len = grid[0].length;
+		for (int i = 1; i < len; i++) {
+			grid[0][i] += grid[0][i - 1];
+		}
+		for (int i = 1; i < high; i++) {
+			grid[i][0] += grid[i - 1][0];
+		}
+		for (int i = 1; i < high; i++) {
+			for (int j = 1; j < len; j++) {
+				grid[i][j] += Math.max(grid[i - 1][j], grid[i][j - 1]);
+			}
+		}
+		return grid[high - 1][len - 1];
+	}
+	
+	public String minNumber(int[] nums) {
+		List<String>[] lists = new ArrayList[10];
+		for (int i = 0; i < 10; i++) {
+			lists[i] = new ArrayList<>();
+		}
+		for (int num : nums) {
+			String s = String.valueOf(num);
+			lists[s.charAt(0) - '0'].add(s);
+		}
+		for (List<String> list : lists) {
+			list.sort((a, b) -> {
+				int la = a.length();
+				int lb = b.length();
+				int ml = Math.max(la, lb) + 1;
+				int i = 1;
+				char ca, cb;
+				while (i < ml) {
+					ca = a.charAt(i % la);
+					cb = b.charAt(i % lb);
+					if (ca != cb) {
+						return ca - cb;
+					}
+					i++;
+				}
+				return 0;
+			});
+		}
+		StringBuffer buffer = new StringBuffer();
+		for (List<String> list : lists) {
+			for (String s : list) {
+				buffer.append(s);
+			}
+		}
+		return buffer.toString();
+	}
+	
+	public int maxSubArray(int[] nums) {
+		int sum = 0, minsum = 0, max = Integer.MIN_VALUE;
+		for (int num : nums) {
+			sum += num;
+			max = Math.max(max, sum - minsum);
+			minsum = Math.min(minsum, sum);
+		}
+		return max;
+		
+	}
+	
+	public int[] getLeastNumbers(int[] arr, int k) {
+		if (k >= arr.length) {
+			return arr;
+		} else if (k == 0) {
+			return new int[]{};
+		}
+		PriorityQueue<Integer> queue = new PriorityQueue<>((a, b) -> (b - a));
+		for (int i : arr) {
+			queue.add(i);
+			if (queue.size() > k) {
+				queue.poll();
+			}
+		}
+		int[] ret = new int[k];
+		for (int i = 0; i < k; i++) {
+			ret[i] = queue.poll();
+		}
+		return ret;
+	}
+	
+	public static class ListNode {
+		
+		int val;
+		ListNode next;
+		
+		ListNode(int x) {
+			val = x;
+		}
+		
+	}
+	
+	//面试题 02.05. 链表求和
+	public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+		if (l1 == null) {
+			return l2;
+		} else if (l2 == null) {
+			return l1;
+		}
+		ListNode ret = new ListNode(0), cur = ret;
+		int t = 0;
+		while (l1 != null || l2 != null) {
+			t = t + (l1 != null ? l1.val : 0) + (l2 != null ? l2.val : 0);
+			cur.next = new ListNode(t % 10);
+			cur = cur.next;
+			l1 = l1 != null ? l1.next : null;
+			l2 = l2 != null ? l2.next : null;
+			t /= 10;
+		}
+		if (t > 0) {
+			cur.next = new ListNode(t);
+		}
+		return ret.next;
+		
+	}
+	
 	//1370
 	public String sortString(String s) {
 		int[] count = new int[26];
 		int len = s.length();
 		char[] ret = new char[len];
 		for (int i = 0; i < len; i++) {
-			count[s.charAt(i)-'a']++;
+			count[s.charAt(i) - 'a']++;
 		}
-		int c=0;
-		while (c<len){
+		int c = 0;
+		while (c < len) {
 			for (int i = 0; i < 26; i++) {
-				if(count[i]>0){
-					ret[c++]=(char)(i+'a');
+				if (count[i] > 0) {
+					ret[c++] = (char) (i + 'a');
+					count[i]--;
 				}
 			}
-			for (int i = 26; i > 0; i--) {
-				if(count[i]>0){
-					ret[c++]=(char)(i+'a');
+			for (int i = 25; i >= 0; i--) {
+				if (count[i] > 0) {
+					ret[c++] = (char) (i + 'a');
+					count[i]--;
 				}
 			}
 		}
 		return new String(ret);
 	}
+	
 	//面试题 01.06. 字符串压缩
 	public String compressString(String S) {
 		int len = S.length();
-		if(len==0){
+		if (len == 0) {
 			return S;
 		}
-		char cur=S.charAt(0);
-		int count=0;
+		char cur = S.charAt(0);
+		int count = 0;
 		StringBuffer buffer = new StringBuffer();
 		for (char c : S.toCharArray()) {
-			if(c==cur){
+			if (c == cur) {
 				count++;
-			}else{
+			} else {
 				buffer.append(cur);
 				buffer.append(count);
-				cur=c;
-				count=1;
-				if(buffer.length()+2>=len){
+				cur = c;
+				count = 1;
+				if (buffer.length() + 2 >= len) {
 					return S;
 				}
 			}
 		}
 		buffer.append(cur);
 		buffer.append(count);
-		if(buffer.length()>=len){
+		if (buffer.length() >= len) {
 			return S;
-		}else{
+		} else {
 			return buffer.toString();
 		}
 	}
+	
 	//面试题 01.05. 一次编辑
 	public boolean oneEditAway(String first, String second) {
 		int l1 = first.length();
 		int l2 = second.length();
-		int c=0,i=0,j=0;
-		if(l1-l2==0){//替换或不变
+		int c = 0, i = 0, j = 0;
+		if (l1 - l2 == 0) {//替换或不变
 			for (; i < l1; i++) {
-				if(first.charAt(i)!=second.charAt(i)){
+				if (first.charAt(i) != second.charAt(i)) {
 					c++;
 				}
-				if(c>1){
+				if (c > 1) {
 					return false;
 				}
 			}
-		}else if(l1-l2==-1){//插入
-			 if(l1==0){
-			 	return true;
-			 }
-			 while (i<l1&&first.charAt(i)==second.charAt(j)){
-			 	i++;j++;
-			 }
-			 j++;
-			 while (i<l1&&first.charAt(i)==second.charAt(j)){
-			 	i++;j++;
-			 }
-			 if(i<l1){
-			 	return false;
-			 }
-		}else if(l1-l2==1){//删除
-			 return oneEditAway(second,first);
-		}else{
+		} else if (l1 - l2 == -1) {//插入
+			if (l1 == 0) {
+				return true;
+			}
+			while (i < l1 && first.charAt(i) == second.charAt(j)) {
+				i++;
+				j++;
+			}
+			j++;
+			while (i < l1 && first.charAt(i) == second.charAt(j)) {
+				i++;
+				j++;
+			}
+			if (i < l1) {
+				return false;
+			}
+		} else if (l1 - l2 == 1) {//删除
+			return oneEditAway(second, first);
+		} else {
 			return false;
 		}
 		return true;
 	}
+	
 	//面试题 01.04. 回文排列
 	public boolean canPermutePalindrome(String s) {
 		int[] count = new int[26];
 		int len = s.length();
 		for (int i = 0; i < len; i++) {
-			count[s.charAt(i)-'a']++;
+			count[s.charAt(i) - 'a']++;
 		}
-		int c=0;
+		int c = 0;
 		for (int i : count) {
-			c+=(i&1);
-			if(c>1){
+			c += (i & 1);
+			if (c > 1) {
 				return false;
 			}
 		}
 		return true;
 	}
+	
 	//32
 	public int longestValidParentheses(String s) {
 		Stack<Integer> stack = new Stack<>();
@@ -173,21 +917,21 @@ public class Test1 {
 		int len = s.length();
 		char c;
 		stack.push(-1);
-		int start=-1;
+		int start = -1;
 		for (int i = 0; i < len; i++) {
 			c = s.charAt(i);
 			if (c == '(') {
 				stack.push(i);
 			} else {
-				if(stack.peek()>=0){
+				if (stack.peek() >= 0) {
 					stack.pop();
-					if(stack.peek()<0){
-						ret= Math.max(ret,i-start);
-					}else{
-						ret= Math.max(ret,i-stack.peek());
+					if (stack.peek() < 0) {
+						ret = Math.max(ret, i - start);
+					} else {
+						ret = Math.max(ret, i - stack.peek());
 					}
-				}else{
-					start=i;
+				} else {
+					start = i;
 				}
 			}
 		}
@@ -306,11 +1050,11 @@ public class Test1 {
 	public int numTimesAllBlue(int[] light) {
 		int blue = 0;
 		int len = light.length;
-		boolean[] flag = new boolean[len + 1];
+		boolean[] flag = new boolean[len + 2];
 		int ret = 0;
 		for (int i = 0; i < len; i++) {
 			flag[light[i]] = true;
-			while (flag[blue]) {
+			while (flag[blue+1]) {
 				blue++;
 			}
 			if (blue == i + 1) {

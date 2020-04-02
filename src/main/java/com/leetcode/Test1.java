@@ -916,7 +916,7 @@ public class Test1 {
 	}
 	
 	public static int longestPalindrome(String s) {
-		int[] ints = new int['z' - 'A'];
+		int[] ints = new int['z' - 'A'+1];
 		for (char c : s.toCharArray()) {
 			ints[c - 'A']++;
 		}
