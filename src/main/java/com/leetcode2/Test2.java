@@ -25,73 +25,144 @@ public class Test2 {
 	
 	public static void main(String[] args) throws Exception {
 		Test2 test = new Test2();
-		test.countLargestGroup(13);
-		test.rotate(new int[][]{{1,2,3},{5,6,7},{9,10,11}});
+		
+		test.stoneGameIII(new int[]{-1,-2,-3});
 	}
+	
+	//1406. 石子游戏 III
+	public String stoneGameIII(int[] stoneValue) {
+		int len = stoneValue.length;
+		int[] mem = new int[len];
+		Arrays.fill(mem,Integer.MIN_VALUE);
+		stoneGameIIIHelper(stoneValue, mem, 0);
+		return mem[0] == 0 ? "Tie" : (mem[0] > 0 ? "Alice" : "Bob");
+	}
+	
+	private int stoneGameIIIHelper(int[] stoneValue, int[] mem, int i) {
+		int ret = Integer.MIN_VALUE;
+		int len = stoneValue.length;
+		if(i>= len){
+			return 0;
+		}else if(mem[i]>ret){
+			return mem[i];
+		}
+		ret = Math.max(ret, stoneValue[i] - stoneGameIIIHelper(stoneValue, mem, i + 1));
+		if(i+1<len){
+			
+			ret = Math.max(ret,
+				stoneValue[i] + stoneValue[i + 1] - stoneGameIIIHelper(stoneValue, mem, i + 2));
+		}
+		if(i+2<len){
+			ret = Math.max(ret,
+				stoneValue[i] + stoneValue[i + 1] + stoneValue[i + 2] - stoneGameIIIHelper(stoneValue,
+					mem, i + 3));
+		}
+		mem[i] = ret;
+		return ret;
+		
+	}
+	
+	//1404. 将二进制表示减到 1 的步骤数
+	public int numSteps(String s) {
+		int len = s.length();
+		int[] num = new int[len];
+		for (int i = 0; i < len; i++) {
+			num[i] = s.charAt(i) - '0';
+		}
+		int i = len - 1, ret = 0;
+		while (i >= 0) {
+			while (i > 0 && num[i] == 0) {
+				ret++;
+				i--;
+			}
+			if (i > 0 && num[i] == 1) {
+				ret++;
+			} else if (i == 0 && num[i] == 0) {
+				ret++;
+				return ret;
+			} else if (i == 0 && num[i] == 1) {
+				return ret;
+			}
+			for (int j = i; j >= 0; j--) {
+				if (num[j] > 0) {
+					num[j] = 0;
+				} else {
+					num[j] = 1;
+					break;
+				}
+			}
+		}
+		return ret;
+	}
+	
 	//1400. 构造 K 个回文字符串
 	public boolean canConstruct(String s, int k) {
 		int[] count = new int[26];
 		int len = s.length();
-		if(len<k){
+		if (len < k) {
 			return false;
 		}
 		for (int i = 0; i < len; i++) {
-			count[s.charAt(i)-'a']++;
+			count[s.charAt(i) - 'a']++;
 		}
-		int x=0;
+		int x = 0;
 		for (int i : count) {
-			x+=(i&1);
+			x += (i & 1);
 		}
-		if(x>k){
+		if (x > k) {
 			return false;
 		}
 		return true;
 	}
+	
 	//1399. 统计最大组的数目
 	public int countLargestGroup(int n) {
 		int[] count = new int[10];
-		int x,c;
+		int x, c;
 		for (int i = 1; i <= n; i++) {
-			x=0;c=i;
-			while (c>0){
-				x+=c%10;
-				c/=10;
+			x = 0;
+			c = i;
+			while (c > 0) {
+				x += c % 10;
+				c /= 10;
 			}
 			count[x]++;
 		}
-		int ret=0,max=0;
+		int ret = 0, max = 0;
 		for (int i : count) {
-			if(i>max){
-				ret=1;
-				max=i;
-			}else if(i==max){
+			if (i > max) {
+				ret = 1;
+				max = i;
+			} else if (i == max) {
 				ret++;
 			}
 		}
 		return ret;
 	}
+	
 	//面试题 01.07. 旋转矩阵
 	public void rotate(int[][] matrix) {
 		int len = matrix.length;
 		for (int i = 0; i < len / 2; i++) {
 			for (int j = 0; j < len / 2; j++) {
-				rotateHelp(matrix,i,j,len-1,0);
+				rotateHelp(matrix, i, j, len - 1, 0);
 			}
 		}
-		if((len&1)==1){
-			int i=len/2;
+		if ((len & 1) == 1) {
+			int i = len / 2;
 			for (int j = 0; j < i; j++) {
-				rotateHelp(matrix,i,j,len,0);
+				rotateHelp(matrix, i, j, len, 0);
 			}
 		}
 	}
-	private int rotateHelp(int[][] matrix, int i, int j, int len,int count) {
-		int ret=matrix[len-j][i];
-		if(count==4){
+	
+	private int rotateHelp(int[][] matrix, int i, int j, int len, int count) {
+		int ret = matrix[len - j][i];
+		if (count == 4) {
 			return ret;
 		}
-		rotateHelp(matrix,len-j,i,len,count+1);
-		matrix[i][j]=ret;
+		rotateHelp(matrix, len - j, i, len, count + 1);
+		matrix[i][j] = ret;
 		return ret;
 	}
 	
