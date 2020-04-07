@@ -25,34 +25,280 @@ public class Test2 {
 	
 	public static void main(String[] args) throws Exception {
 		Test2 test = new Test2();
-		test.missingTwo(new int[]{}
-		);
+		test.countLargestGroup(13);
+		test.rotate(new int[][]{{1,2,3},{5,6,7},{9,10,11}});
 	}
+	//1400. 构造 K 个回文字符串
+	public boolean canConstruct(String s, int k) {
+		int[] count = new int[26];
+		int len = s.length();
+		if(len<k){
+			return false;
+		}
+		for (int i = 0; i < len; i++) {
+			count[s.charAt(i)-'a']++;
+		}
+		int x=0;
+		for (int i : count) {
+			x+=(i&1);
+		}
+		if(x>k){
+			return false;
+		}
+		return true;
+	}
+	//1399. 统计最大组的数目
+	public int countLargestGroup(int n) {
+		int[] count = new int[10];
+		int x,c;
+		for (int i = 1; i <= n; i++) {
+			x=0;c=i;
+			while (c>0){
+				x+=c%10;
+				c/=10;
+			}
+			count[x]++;
+		}
+		int ret=0,max=0;
+		for (int i : count) {
+			if(i>max){
+				ret=1;
+				max=i;
+			}else if(i==max){
+				ret++;
+			}
+		}
+		return ret;
+	}
+	//面试题 01.07. 旋转矩阵
+	public void rotate(int[][] matrix) {
+		int len = matrix.length;
+		for (int i = 0; i < len / 2; i++) {
+			for (int j = 0; j < len / 2; j++) {
+				rotateHelp(matrix,i,j,len-1,0);
+			}
+		}
+		if((len&1)==1){
+			int i=len/2;
+			for (int j = 0; j < i; j++) {
+				rotateHelp(matrix,i,j,len,0);
+			}
+		}
+	}
+	private int rotateHelp(int[][] matrix, int i, int j, int len,int count) {
+		int ret=matrix[len-j][i];
+		if(count==4){
+			return ret;
+		}
+		rotateHelp(matrix,len-j,i,len,count+1);
+		matrix[i][j]=ret;
+		return ret;
+	}
+	
+	//面试题03. 数组中重复的数字
+	public int findRepeatNumber(int[] nums) {
+		int len = nums.length, c, t;
+		for (int i = 0; i < len; i++) {
+			c = nums[i];
+			while (c != i) {
+				t = nums[c];
+				if (t == c) {
+					return t;
+				}
+				nums[c] = c;
+				c = t;
+			}
+			nums[i] = c;
+		}
+		return -1;
+	}
+	
+	//8
+	public int myAtoi(String str) {
+		int len = str.length();
+		long ret = 0;
+		for (int i = 0; i < len; i++) {
+			char c = str.charAt(i);
+			if (c == ' ') {
+				continue;
+			} else if (c == '+') {
+				ret = myAtoiHelper(str, i + 1);
+				break;
+			} else if (c == '-') {
+				ret = -1 * myAtoiHelper(str, i + 1);
+				break;
+			} else if (c >= '0' && c <= '9') {
+				ret = myAtoiHelper(str, i);
+				break;
+			} else {
+				return 0;
+			}
+		}
+		if (ret > Integer.MAX_VALUE) {
+			return Integer.MAX_VALUE;
+		} else if (ret < Integer.MIN_VALUE) {
+			return Integer.MIN_VALUE;
+		} else {
+			return (int) ret;
+		}
+	}
+	
+	private long myAtoiHelper(String str, int s) {
+		int len = str.length();
+		long ret = 0, count = 0;
+		for (int i = s; i < len && count < 11; i++) {
+			if (ret > 0) {
+				count++;
+			}
+			char c = str.charAt(i);
+			if (c >= '0' && c <= '9') {
+				ret = ret * 10 + c - '0';
+			} else {
+				break;
+			}
+		}
+		return ret;
+	}
+	
+	//面试题 17.19. 消失的两个数字
+	public int[] missingTwo(int[] nums) {
+		int total = (1 + nums.length + 2) * (nums.length + 2) / 2;
+		int sum = 0;
+		for (int num : nums) {
+			sum += num;
+		}
+		int x = total - sum;
+		int half = x / 2;
+		int ls = 0;
+		for (int num : nums) {
+			if (num <= half) {
+				ls += num;
+			}
+		}
+		int a = (1 + half) * half / 2 - ls;
+		int b = x - a;
+		return new int[]{a, b};
+	}
+	
+	//面试题59 - I. 滑动窗口的最大值
+	public int[] maxSlidingWindow(int[] nums, int k) {
+		LinkedList<Integer> list = new LinkedList<>();
+		int i = 1;
+		list.add(nums[0]);
+		while (i < k) {
+			while (!list.isEmpty() && list.getLast() < nums[i]) {
+				list.removeLast();
+			}
+			list.add(nums[i]);
+			i++;
+		}
+		int len = nums.length;
+		int[] ret = new int[len - k + 1];
+		for (; i < len; i++) {
+			ret[i - k] = list.getFirst();
+			if (nums[i - k] == list.getFirst()) {
+				list.removeFirst();
+			}
+			while (!list.isEmpty() && list.getLast() < nums[i]) {
+				list.removeLast();
+			}
+			list.add(nums[i]);
+		}
+		ret[len - k] = list.getFirst();
+		return ret;
+	}
+	
+	//面试题50. 第一个只出现一次的字符
+	public char firstUniqChar(String s) {
+		int[][] count = new int[256][2];
+		int len = s.length();
+		int[] cur;
+		for (int i = 0; i < len; i++) {
+			cur = count[s.charAt(i)];
+			cur[0] = i;
+			cur[1]++;
+		}
+		int c = -1;
+		for (int i = 0; i < 256; i++) {
+			cur = count[i];
+			if (cur[1] == 1) {
+				if (c < 0 || count[c][0] > cur[0]) {
+					c = i;
+				}
+			}
+		}
+		return c >= 0 ? (char) c : ' ';
+	}
+	
+	//面试题61. 扑克牌中的顺子
+	public boolean isStraight(int[] nums) {
+		int[] count = new int[14];
+		for (int num : nums) {
+			count[num]++;
+		}
+		for (int i = 1; i <= 13; i++) {
+			if (count[i] == 1) {
+				for (int j = i + 1; j < i + 5; j++) {
+					if (count[i] == 0) {
+						if (count[0] == 0) {
+							return false;
+						} else {
+							count[0]--;
+						}
+					}
+				}
+				break;
+			} else if (count[i] > 1) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	//面试题66. 构建乘积数组
+	public int[] constructArr(int[] a) {
+		int t = 1;
+		int len = a.length;
+		int[] ret = new int[len];
+		for (int i = 0; i < len; i++) {
+			ret[i] = t;
+			t *= a[i];
+		}
+		t = 1;
+		for (int i = len - 1; i >= 0; i--) {
+			ret[i] *= t;
+			t *= a[i];
+		}
+		return ret;
+	}
+	
 	//面试题39. 数组中出现次数超过一半的数字
 	public int majorityElement(int[] nums) {
-		int val=0,count=0;
+		int val = 0, count = 0;
 		for (int num : nums) {
-			if(count==0){
-				val=num;
+			if (count == 0) {
+				val = num;
 				count++;
-			}else if(num==val){
+			} else if (num == val) {
 				count++;
-			}else{
+			} else {
 				count--;
 			}
 		}
 		return val;
 	}
+	
 	//面试题27. 二叉树的镜像
 	public TreeNode mirrorTree(TreeNode root) {
-		if(root==null){
+		if (root == null) {
 			return null;
 		}
 		TreeNode ret = new TreeNode(root.val);
-		ret.left=mirrorTree(root.right);
-		ret.right=mirrorTree(root.left);
+		ret.left = mirrorTree(root.right);
+		ret.right = mirrorTree(root.left);
 		return ret;
 	}
+	
 	//面试题15. 二进制中1的个数
 	public int hammingWeight(int n) {
 		int ret = 0;
@@ -81,6 +327,7 @@ public class Test2 {
 		}
 		return (int) c;
 	}
+	
 	//面试题06. 从尾到头打印链表
 	public int[] reversePrint(ListNode head) {
 		int count = 0;
@@ -98,25 +345,6 @@ public class Test2 {
 		return ret;
 	}
 	
-	//面试题 17.19. 消失的两个数字
-	public int[] missingTwo(int[] nums) {
-		int total = (1 + nums.length + 2) * (nums.length + 2) / 2;
-		int sum = 0;
-		for (int num : nums) {
-			sum += num;
-		}
-		int x = total - sum;
-		int half = x / 2;
-		int ls = 0;
-		for (int num : nums) {
-			if (num <= half) {
-				ls += num;
-			}
-		}
-		int a = (1 + half) * half / 2 - ls;
-		int b = x - a;
-		return new int[]{a, b};
-	}
 	
 	public List<String> getValidT9Words(String num, String[] words) {
 		int[] map = {2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 9, 9};
