@@ -1,13 +1,6 @@
 package com.leetcode2;
 
 import com.leetcode2.Test1.ListNode;
-import com.sun.corba.se.spi.orbutil.proxy.LinkedInvocationHandler;
-import com.sun.deploy.panel.ITreeNode;
-import com.sun.javafx.sg.prism.web.NGWebView;
-import com.sun.org.apache.xpath.internal.FoundIndex;
-import com.sun.org.apache.xpath.internal.functions.FuncFalse;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.InterningXmlVisitor;
-import java.lang.management.MemoryNotificationInfo;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,8 +14,6 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import javax.swing.MenuElement;
-import sun.misc.InnocuousThread;
 
 /**
  * @ProjectName: study

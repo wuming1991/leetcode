@@ -1,7 +1,14 @@
 package com;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalField;
+import java.util.Date;
 import java.util.Scanner;
+import sun.net.www.http.HttpClient;
 
 /**
  * @ProjectName: study
@@ -14,17 +21,9 @@ import java.util.Scanner;
  * Copyright: Copyright (c) 2019
  */
 public class Test {
-	
+	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	public static void main(String[] args) {
-		Scanner scanner = new Scanner(System.in);
-		System.out.println("input your name:");
-		String name = scanner.nextLine();
-		System.out.println("input your first num");
-		int i = scanner.nextInt();
-		System.out.println("input your last num");
-		int i1 = scanner.nextInt();
-		float i2=(float)(i1-i)/i;
-		System.out.println(name + ":first:" + i + "last:" + i1+"rate:"+new BigDecimal(i2).setScale(2,BigDecimal.ROUND_DOWN));
-		
+	
 	}
+	
 }

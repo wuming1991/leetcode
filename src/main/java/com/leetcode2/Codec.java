@@ -15,7 +15,7 @@ import java.util.ArrayList;
  */
 public class Codec {
 	
-	public class TreeNode {
+	public static class TreeNode {
 		
 		int val;
 		TreeNode left;
@@ -78,7 +78,7 @@ public class Codec {
 					break;
 				}
 				l = node[idx];
-				r = node[idx + 1];
+				r =idx+1 < node.length? node[idx + 1]:"null";
 				if (!l.equals("null")) {
 					x.left = new TreeNode(Integer.valueOf(l));
 					next.add(x.left);
@@ -96,7 +96,7 @@ public class Codec {
 	
 	public static void main(String[] args) {
 		Codec codec = new Codec();
-		TreeNode node = codec.deserialize("[1,2,3,null,null,4,5,null,3,4,5,6,null,9,0,null,2,null,1]");
+		TreeNode node = codec.deserialize("[1,2]");
 		System.out.println(codec.serialize(node));
 	}
 }

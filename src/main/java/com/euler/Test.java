@@ -1,5 +1,6 @@
 package com.euler;
 
+import com.wuming.vm.HotSwap.JavaClassExecuter;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,11 +19,56 @@ public class Test {
 	
 	public static void main(String[] args) {
 		Test test = new Test();
-		System.out.println(test.euler30());
+		System.out.println(test.euler33());
 	}
 	
-
-	
+	private long euler33() {
+		int a = 1, b = 1;
+		double u10, u1, d10, d1;
+		for (double i = 10; i < 100; i++) {
+			u10 = (int)(i / 10);
+			u1 = i % 10;
+			for (double j = i + 1; j < 100; j++) {
+				d10=(int)(j / 10);
+				d1=j%10;
+				if(u10==d10){
+					if(i/j==u1/d1&&u10!=0&&i/u10!=u1){
+						a*=i;
+						b*=j;
+					}
+				}
+				if(u10==d1){
+					if(i/j==u1/d10&&u10!=0&&i/u10!=u1){
+						a*=i;
+						b*=j;
+					}
+				}
+				if(u1==d10){
+					if(i/j==u10/d1&&u1!=0&&i/u1!=u10){
+						a*=i;
+						b*=j;
+					}
+				}
+				if(u1==d1){
+					if(i/j==u10/d10&&u1!=0&&i/u1!=u10){
+						a*=i;
+						b*=j;
+					}
+				}
+			}
+		}
+		long gcb = gcb(a, b);
+		return b/gcb;
+	}
+	private long gcb(long x, long y) {
+		long t;
+		while (y != 0) {
+			t = x % y;
+			x = y;
+			y = t;
+		}
+		return x;
+	}
 	long euler30 = 0;
 	
 	private long euler30() {
