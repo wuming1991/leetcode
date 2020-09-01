@@ -4,6 +4,7 @@ import static com.base.Constant.ds_4;
 
 import com.base.ListNode;
 import com.leetcode2.Codec.TreeNode;
+import com.wuming.vm.dispatch.MethodHandleTest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,11 +12,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
-import sun.reflect.generics.tree.ReturnType;
+import java.util.TreeSet;
 
 /**
  * @Author: WuMing
@@ -29,70 +31,682 @@ public class Test6 {
 	
 	public static void main(String[] args) throws IOException {
 		Test6 test = new Test6();
-		
-		test.minDays(109);
+		test.PredictTheWinner(new int[]{1,5,2});
 	}
+	
+	public boolean PredictTheWinner(int[] nums) {
+		int len = nums.length;
+		int[][] mem = new int[len][len];
+		for (int i = 0; i < len; i++) {
+			mem[i][i]=nums[i];
+		}
+		for (int l = 1; l < len; l++) {
+			for (int i = 0; i+l < len; i++) {
+				mem[i][i+l]=Math.max(nums[i]-mem[i+1][i+l],nums[i+l]-mem[i][i+l-1]);
+			}
+		}
+		return mem[0][len-1]>0;
+	}
+	//1567. 乘积为正数的最长子数组长度
+	public int getMaxLen(int[] nums) {
+		int count = 0, ret = 0, a = Integer.MAX_VALUE, b = Integer.MAX_VALUE, c = -1;
+		int len = nums.length;
+		for (int i = 0; i < len; i++) {
+			if (nums[i] == 0) {
+				count = 0;
+				b = Integer.MAX_VALUE;
+				a = Integer.MAX_VALUE;
+				c = i;
+			} else if (nums[i] > 0) {
+				a = Math.min(i, a);
+				if ((count & 1) == 1) {
+					ret = Math.max(i - b, ret);
+				} else {
+					ret = Math.max(i - c, ret);
+				}
+			} else {
+				count++;
+				b = Math.min(i, b);
+				if ((count & 1) == 1) {
+					ret = Math.max(i - b, ret);
+				} else {
+					ret = Math.max(i - c, ret);
+				}
+			}
+		}
+		return ret;
+	}
+	
+	//841. 钥匙和房间
+	public boolean canVisitAllRooms(List<List<Integer>> rooms) {
+		int len = rooms.size();
+		boolean[] visited = new boolean[len];
+		LinkedList<Integer> list = new LinkedList<>();
+		list.add(0);
+		while (!list.isEmpty() && len > 0) {
+			Integer key = list.removeFirst();
+			if (!visited[key]) {
+				list.addAll(rooms.get(key));
+				visited[key] = true;
+				len--;
+			}
+		}
+		return len == 0;
+	}
+	
+	//68. 文本左右对齐
+	public List<String> fullJustify(String[] words, int maxWidth) {
+		ArrayList<String> ret = new ArrayList<>();
+		int left = 0;
+		int len = words.length;
+		int sum = 0;
+		for (int i = 0; i < len; i++) {
+			if (sum + words[i].length() <= maxWidth) {
+				sum += words[i].length() + 1;
+			} else {
+				fullJustifyHelper(ret, words, left, i, maxWidth - sum + 1);
+				left = i;
+				sum = words[i].length() + 1;
+			}
+		}
+		if (left < len) {
+			StringBuffer buffer = new StringBuffer();
+			for (int i = left; i < len; i++) {
+				buffer.append(words[i] + " ");
+			}
+			while (sum < maxWidth) {
+				buffer.append(' ');
+				sum++;
+			}
+			while (sum > maxWidth) {
+				sum--;
+				buffer.deleteCharAt(sum);
+			}
+			ret.add(buffer.toString());
+		}
+		return ret;
+	}
+	
+	private void fullJustifyHelper(ArrayList<String> ret, String[] words, int i, int r, int last) {
+		int c = r - i - 1;
+		StringBuffer buffer = new StringBuffer();
+		if (c == 0) {
+			buffer.append(words[i]);
+			while (last > 0) {
+				buffer.append(' ');
+				last--;
+			}
+		} else {
+			last += c;
+			int x = last / c, y = last % c;
+			for (; i < r - 1; i++) {
+				buffer.append(words[i]);
+				for (int j = 0; j < x; j++) {
+					buffer.append(' ');
+				}
+				if (y > 0) {
+					buffer.append(' ');
+					y--;
+				}
+			}
+			buffer.append(words[i]);
+		}
+		ret.add(buffer.toString());
+	}
+	
+	//87. 扰乱字符串
+	public boolean isScramble(String s1, String s2) {
+		HashMap<String, Boolean> map = new HashMap<>();
+		return isScrambleHelper(s1, 0, s1.length() - 1, s2, 0, s2.length() - 1, map);
+	}
+	
+	private boolean isScrambleHelper(String s1, int l1, int r1, String s2, int l2, int r2,
+		Map<String, Boolean> map) {
+		String key = l1 + "_" + r1 + "_" + l2 + "_" + r2;
+		if (map.containsKey(key)) {
+			return map.get(key);
+		}
+		int i = l1, j = r2;
+		int[] mem = new int[26];
+		int count = 0;
+		int x, k = 0;
+		while (l1 + k <= r1) {
+			if (s1.charAt(l1 + k) == s2.charAt(l2 + k)) {
+				k++;
+			} else {
+				break;
+			}
+		}
+		if (k + l1 > r1) {
+			map.put(key, true);
+			return true;
+		}
+		while (i < r1) {
+			x = s1.charAt(i) - 'a';
+			mem[x]++;
+			if (mem[x] == 1) {
+				count++;
+			} else if (mem[x] == 0) {
+				count--;
+			}
+			x = s2.charAt(j) - 'a';
+			mem[x]--;
+			if (mem[x] == -1) {
+				count++;
+			} else if (mem[x] == 0) {
+				count--;
+			}
+			if (count == 0) {
+				if (isScrambleHelper(s1, l1, i, s2, j, r2, map) && isScrambleHelper(s1, i + 1, r1,
+					s2,
+					l2, j - 1, map)) {
+					map.put(key, true);
+					return true;
+				}
+			}
+			i++;
+			j--;
+		}
+		i = l1;
+		j = l2;
+		count = 0;
+		Arrays.fill(mem, 0);
+		while (i < r1) {
+			x = s1.charAt(i) - 'a';
+			mem[x]++;
+			if (mem[x] == 1) {
+				count++;
+			} else if (mem[x] == 0) {
+				count--;
+			}
+			x = s2.charAt(j) - 'a';
+			mem[x]--;
+			if (mem[x] == -1) {
+				count++;
+			} else if (mem[x] == 0) {
+				count--;
+			}
+			if (count == 0) {
+				if (isScrambleHelper(s1, l1, i, s2, l2, j, map) && isScrambleHelper(s1, i + 1, r1,
+					s2,
+					j + 1, r2, map)) {
+					map.put(key, true);
+					return true;
+				}
+			}
+			i++;
+			j++;
+		}
+		map.put(key, false);
+		return false;
+	}
+	
+	
+	//188. 买卖股票的最佳时机 IV
+	public int maxProfit1(int k, int[] prices) {
+		int len = prices.length, ret = 0, x;
+		if (k / 2 > len) {
+			for (int i = 1; i < len; i++) {
+				x = prices[i] - prices[i - 1];
+				if (x > 0) {
+					ret += x;
+				}
+			}
+			return ret;
+		}
+		int[] buy = new int[k];//持有股票的最大值
+		int[] sell = new int[k];//不持有股票的最大值
+		Arrays.fill(buy, Integer.MIN_VALUE);
+		for (int p : prices) {
+			buy[0] = Math.max(-p, buy[0]);
+			sell[0] = Math.max(sell[0], buy[0] + p);
+			for (int i = 1; i < k; i++) {
+				buy[i] = Math.max(buy[i], sell[i - 1] - p);
+				sell[i] = Math.max(sell[i], buy[i] + p);
+			}
+		}
+		return sell[k - 1];
+	}
+	
+	class TireeNode {
+		
+		boolean isEnd = false;
+		String s;
+		TireeNode[] children = new TireeNode[26];
+	}
+	
+	public List<String> wordBreak(String s, List<String> wordDict) {
+		TireeNode root = new TireeNode();
+		int len, x;
+		for (String w : wordDict) {
+			TireeNode cur = root;
+			len = w.length();
+			for (int i = 0; i < len; i++) {
+				x = w.charAt(i) - 'a';
+				if (cur.children[x] == null) {
+					cur.children[x] = new TireeNode();
+				}
+				cur = cur.children[x];
+			}
+			cur.isEnd = true;
+			cur.s = w;
+		}
+		
+		HashMap<Integer, List<String>> map = new HashMap<>();
+		List<String> ret = wordBreakHelper(root, s, 0, map);
+		return ret;
+	}
+	
+	private List<String> wordBreakHelper(TireeNode root, String s, int i,
+		HashMap<Integer, List<String>> map) {
+		if (map.containsKey(i)) {
+			return map.get(i);
+		}
+		int len = s.length();
+		TireeNode cur = root;
+		int x, b = i;
+		List<String> ret = new ArrayList<>(), right;
+		for (; i < len; i++) {
+			x = s.charAt(i) - 'a';
+			if (cur.children[x] == null) {
+				map.put(b, ret);
+				return ret;
+			} else {
+				cur = cur.children[x];
+			}
+			if (cur.isEnd) {
+				right = wordBreakHelper(root, s, i + 1, map);
+				for (String t : right) {
+					ret.add(cur.s + " " + t);
+				}
+			}
+		}
+		if (cur.isEnd) {
+			ret.add(s.substring(b));
+		}
+		map.put(b, ret);
+		return ret;
+	}
+	
+	
+	//188. 买卖股票的最佳时机 IV--超时
+	public int maxProfit(int k, int[] prices) {
+		int len = prices.length;
+		int[] mem = new int[len], next;
+		int x;
+		for (int i = 0; i < k; i++) {
+			next = new int[len];
+			for (int j = 1; j < len; j++) {
+				next[j] = Math.max(next[j - 1], mem[j]);
+				for (int l = j; l >= 0; l--) {
+					x = prices[j] - prices[l];
+					next[j] = Math.max(next[j], Math.max(x, 0) + (l > 0 ? mem[l - 1] : 0));
+				}
+			}
+			mem = next;
+		}
+		return mem[len - 1];
+	}
+	
+	//1552. 两球之间的磁力
+	public int maxDistance1(int[] position, int m) {
+		Arrays.sort(position);
+		int len = position.length;
+		int l = 1, r = position[len - 1];
+		int mid, c, b;
+		while (l <= r) {
+			mid = (l + r) >> 1;
+			c = 1;
+			b = position[0];
+			for (int p : position) {
+				if (p - b >= mid) {
+					c++;
+					b = p;
+				}
+			}
+			if (c >= m) {
+				l = mid + 1;
+			} else {
+				r = mid - 1;
+			}
+		}
+		return l;
+	}
+	
+	public int maxDistance(int[] position, int m) {
+		TreeSet<Integer> set = new TreeSet<>();
+		for (int i : position) {
+			set.add(i);
+		}
+		int l = 1, r = set.last(), mid;
+		int min = set.first();
+		Integer t;
+		while (l <= r) {
+			mid = (r - l) / 2 + l;
+			int c = 0;
+			t = min;
+			while (t != null && c < m) {
+				t = set.higher(t + mid);
+				c++;
+			}
+			if (c < m) {
+				r = mid - 1;
+			} else {
+				l = mid + 1;
+			}
+		}
+		return l;
+	}
+	
+	public List<List<Integer>> findSubsequences(int[] nums) {
+		ArrayList<List<Integer>> ret = new ArrayList<>();
+		LinkedList<Integer> list = new LinkedList<>();
+		findSubsequencesHelper(nums, 0, ret, list);
+		return ret;
+	}
+	
+	private void findSubsequencesHelper(int[] nums, int idx, ArrayList<List<Integer>> ret,
+		LinkedList<Integer> list) {
+		if (idx == nums.length) {
+			if (list.size() > 1) {
+				ret.add(new ArrayList<>(list));
+			}
+			return;
+		}
+		if (list.isEmpty() || list.getLast() <= nums[idx]) {
+			list.add(nums[idx]);
+			findSubsequencesHelper(nums, idx + 1, ret, list);
+			list.removeLast();
+		}
+		if (list.isEmpty() || list.getLast() != nums[idx]) {
+			findSubsequencesHelper(nums, idx + 1, ret, list);
+		}
+	}
+	
+	
+	//1559. 二维网格图中探测环
+	public boolean containsCycle(char[][] grid) {
+		int high = grid.length;
+		int len = grid[0].length;
+		boolean[][] visited = new boolean[high][len];
+		for (int i = 0; i < high; i++) {
+			for (int j = 0; j < len; j++) {
+				if (!visited[i][j]) {
+					visited[i][j] = true;
+					for (int[] x : ds_4) {
+						int ni = i + x[0], nj = j + x[1];
+						if (ni < 0 || nj < 0 || ni >= high || nj >= len
+							|| grid[ni][nj] != grid[i][j]) {
+							continue;
+						}
+						if (containsCycleHelper(visited, grid, ni, nj, grid[i][j], i,
+							j)) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	private boolean containsCycleHelper(boolean[][] visited, char[][] grid,
+		int i, int j, char c, int fi, int fj) {
+		visited[i][j] = true;
+		int ni, nj, high = grid.length, len = grid[0].length;
+		for (int[] x : ds_4) {
+			ni = i + x[0];
+			nj = j + x[1];
+			if (ni < 0 || nj < 0 || ni >= high || nj >= len || grid[ni][nj] != c) {
+				continue;
+			}
+			if (visited[ni][nj]) {
+				if (ni != fi || nj != fj) {
+					return true;
+				}
+			} else if (containsCycleHelper(visited, grid, ni, nj, c, i, j)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
+	//1556. 千位分隔数
+	public String thousandSeparator(int n) {
+		if (n < 1000) {
+			return n + "";
+		}
+		StringBuffer buffer = new StringBuffer();
+		while (n > 0) {
+			for (int i = 0; i < 3 && n > 0; i++) {
+				buffer.insert(0, n % 10);
+				n /= 10;
+			}
+			if (n > 0) {
+				buffer.insert(0, '.');
+			}
+		}
+		return buffer.toString();
+	}
+	
+	//1560. 圆形赛道上经过次数最多的扇区
+	public List<Integer> mostVisited(int n, int[] rounds) {
+		ArrayList<Integer> ret = new ArrayList<>();
+		int begin = rounds[0];
+		int end = rounds[rounds.length - 1];
+		if (begin <= end) {
+			for (int i = begin; i <= end; i++) {
+				ret.add(i);
+			}
+		} else {
+			for (int i = 1; i <= end; i++) {
+				ret.add(i);
+			}
+			for (int i = begin; i <= n; i++) {
+				ret.add(i);
+			}
+		}
+		return ret;
+	}
+	
+	//1562. 查找大小为 M 的最新分组
+	public int findLatestStep(int[] arr, int m) {
+		int len = arr.length;
+		int[] meml = new int[len + 2];
+		int[] memr = new int[len + 2];
+		for (int i = 0; i <= len + 1; i++) {
+			meml[i] = i;
+			memr[i] = i;
+		}
+		int ret = 0, l, r;
+		HashSet<Integer> set = new HashSet<>(), removed = new HashSet<>();
+		for (int i = 0; i < len; i++) {
+			l = arr[i] - 1;
+			r = arr[i] + 1;
+			while (meml[l] != l) {
+				l = meml[l];
+			}
+			meml[arr[i]] = l;
+			while (memr[r] != r) {
+				r = memr[r];
+			}
+			memr[arr[i]] = r;
+			for (Integer x : set) {
+				if (x >= l && x < r) {
+					removed.add(x);
+				}
+			}
+			set.removeAll(removed);
+			if (r - l - 1 == m) {
+				set.add(l);
+			}
+			if (set.size() > 0) {
+				ret = i;
+			}
+		}
+		return ret + 1;
+	}
+	
+	//5481. 得到目标数组的最少函数调用次数
+	public int minOperations(int[] nums) {
+		int ret = 0;
+		int len = nums.length;
+		boolean flag = true;
+		while (flag) {
+			flag = false;
+			for (int i = 0; i < len; i++) {
+				if ((nums[i] & 1) > 0) {
+					ret++;
+					nums[i]--;
+				}
+			}
+			for (int i = 0; i < len; i++) {
+				if (nums[i] > 0) {
+					nums[i] >>= 1;
+					flag = true;
+				}
+			}
+			if (flag) {
+				ret++;
+			}
+		}
+		return ret;
+	}
+	
+	public List<Integer> findSmallestSetOfVertices(int n, List<List<Integer>> edges) {
+		int[] mem = new int[n];
+		for (int i = 0; i < n; i++) {
+			mem[i] = i;
+		}
+		int f, t;
+		for (List<Integer> edge : edges) {
+			f = edge.get(0);
+			t = edge.get(1);
+			while (mem[f] != f) {
+				f = mem[f];
+			}
+			mem[t] = f;
+		}
+		ArrayList<Integer> ret = new ArrayList<>();
+		for (int i = 0; i < n; i++) {
+			if (mem[i] == i) {
+				ret.add(i);
+			}
+		}
+		return ret;
+	}
+	
+	public int maxCoins(int[] piles) {
+		Arrays.sort(piles);
+		int count = piles.length / 3;
+		int ret = 0;
+		for (int i = piles.length - 2; count > 0; i -= 2, count--) {
+			ret += piles[i];
+		}
+		return ret;
+	}
+	
+	//111. 二叉树的最小深度
+	public int minDepth(TreeNode root) {
+		return minDepthHelper(root, 0);
+	}
+	
+	private int minDepthHelper(TreeNode root, int i) {
+		if (root == null) {
+			return i;
+		}
+		if (root.left == null && root.right == null) {
+			return i + 1;
+		} else if (root.left == null) {
+			return minDepthHelper(root.right, i + 1);
+		} else if (root.right == null) {
+			return minDepthHelper(root.left, i + 1);
+		}
+		return Math.min(minDepthHelper(root.left, i + 1), minDepthHelper(root.right, i + 1));
+	}
+	
+	//1539. 第 k 个缺失的正整数
+	public int findKthPositive(int[] arr, int k) {
+		int i = 1, idx = 0;
+		while (true) {
+			int len = arr.length;
+			if (idx < len && arr[idx] == i) {
+				idx++;
+			} else {
+				k--;
+				if (k == 0) {
+					return i;
+				}
+			}
+		}
+	}
+	
 	//647. 回文子串
 	public int countSubstrings(String s) {
-		int len = s.length(),ret=0;
+		int len = s.length(), ret = 0;
 		for (int i = 0; i < len; i++) {
-			ret+=countSubstringsHelper(s,i,i)+countSubstringsHelper(s,i,i+1);
+			ret += countSubstringsHelper(s, i, i) + countSubstringsHelper(s, i, i + 1);
 		}
 		return ret;
 	}
 	
 	private int countSubstringsHelper(String s, int l, int r) {
-		int len = s.length(),ret=0;
-		while (l>=0&&r<len){
-			if(s.charAt(l)==s.charAt(r)){
+		int len = s.length(), ret = 0;
+		while (l >= 0 && r < len) {
+			if (s.charAt(l) == s.charAt(r)) {
 				ret++;
-			}else{
+			} else {
 				break;
 			}
-			l--;r++;
+			l--;
+			r++;
 		}
 		return ret;
 	}
 	
 	//1210. 穿过迷宫的最少移动次数
 	public int minimumMoves(int[][] grid) {
-		HashSet<Integer> cur = new HashSet<>(),next;
-		int x1,y1,x2,y2;
+		HashSet<Integer> cur = new HashSet<>(), next;
+		int x1, y1, x2, y2;
 		int high = grid.length;
-		int ret=0;
+		int ret = 0;
 		cur.add(1);
-		int target = (high-1)*1000000+(high-2)*10000+(high-1)*100+high-1;
-		while (!cur.isEmpty()){
-			next=new HashSet<>();
+		int target = (high - 1) * 1000000 + (high - 2) * 10000 + (high - 1) * 100 + high - 1;
+		while (!cur.isEmpty()) {
+			next = new HashSet<>();
 			ret++;
 			for (Integer t : cur) {
-				y2=t%100;t/=100;
-				x2=t%100;t/=100;
-				y1=t%100;t/=100;
-				x1=t;
-				if(x1==x2){
-					if(y2+1<high&&grid[x2][y2+1]==0){
-						next.add(x2*1000000+y2*10000+x2*100+y2+1);
+				y2 = t % 100;
+				t /= 100;
+				x2 = t % 100;
+				t /= 100;
+				y1 = t % 100;
+				t /= 100;
+				x1 = t;
+				if (x1 == x2) {
+					if (y2 + 1 < high && grid[x2][y2 + 1] == 0) {
+						next.add(x2 * 1000000 + y2 * 10000 + x2 * 100 + y2 + 1);
 					}
-					if(x1+1<high&&grid[x1+1][y1]==0&&grid[x2+1][y2]==0){
-						next.add((x1+1)*1000000+y1*10000+(x2+1)*100+y2);
-						next.add(x1*1000000+y1*10000+(x1+1)*100+y1);
+					if (x1 + 1 < high && grid[x1 + 1][y1] == 0 && grid[x2 + 1][y2] == 0) {
+						next.add((x1 + 1) * 1000000 + y1 * 10000 + (x2 + 1) * 100 + y2);
+						next.add(x1 * 1000000 + y1 * 10000 + (x1 + 1) * 100 + y1);
 					}
-				}else{
-					if(x2+1<high&&grid[x2+1][y2]==0){
-						next.add(x2*1000000+y2*10000+(x2+1)*100+y2);
+				} else {
+					if (x2 + 1 < high && grid[x2 + 1][y2] == 0) {
+						next.add(x2 * 1000000 + y2 * 10000 + (x2 + 1) * 100 + y2);
 					}
-					if(y1+1<high&&grid[x1][y1+1]==0&&grid[x2][y2+1]==0){
-						next.add(x1*1000000+(y1+1)*10000+x2*100+y2+1);
-						next.add(x1*1000000+y1*10000+x1*100+y2+1);
+					if (y1 + 1 < high && grid[x1][y1 + 1] == 0 && grid[x2][y2 + 1] == 0) {
+						next.add(x1 * 1000000 + (y1 + 1) * 10000 + x2 * 100 + y2 + 1);
+						next.add(x1 * 1000000 + y1 * 10000 + x1 * 100 + y2 + 1);
 					}
 				}
 				
 			}
-			if(next.contains(target)){
+			if (next.contains(target)) {
 				return ret;
 			}
-			cur=next;
+			cur = next;
 		}
 		return -1;
 	}
