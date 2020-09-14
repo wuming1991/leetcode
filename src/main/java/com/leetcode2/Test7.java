@@ -5,12 +5,15 @@ import static com.base.Constant.ds_4;
 import com.sun.xml.internal.ws.streaming.TidyXMLStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.LongToDoubleFunction;
 import sun.security.util.Length;
 
@@ -25,8 +28,148 @@ public class Test7 {
 	
 	public static void main(String[] args) {
 		Test7 test = new Test7();
-		test.numTriplets(new int[]{7,4},new int[]{5,2,8,9});
+		test.strangePrinter("absabewq");
+		
 	}
+	
+	//664. 奇怪的打印机
+	public int strangePrinter(String s) {
+		char[] arr = s.toCharArray();
+		int len = arr.length;
+		int[][] mem = new int[len][len];
+		for (int i = 0; i < len; i++) {
+			mem[i][i] = 1;
+		}
+		for (int i = 1; i < len; i++) {
+			for (int l = 0, r = i; r < len; l++, r++) {
+				if(arr[l]==arr[r]){
+					mem[l][r]=Math.min(mem[l+1][r],mem[l][r-1]);
+				}else if(arr[l]==arr[l+1]){
+					mem[l][r]=mem[l+1][r];
+				}else if(arr[r]==arr[r-1]){
+					mem[l][r]=mem[l][r-1];
+				}else{
+					mem[l][r]=mem[l][r-1]+1;
+					for (int j = l; j<r ; j++) {
+						mem[l][r]=Math.min(mem[l][r],mem[l][j]+mem[j+1][r]);
+					}
+				}
+			}
+		}
+		return mem[0][len - 1];
+	}
+	
+	private int strangePrinterHelper(char[] arr, int[][] mem, int l, int r) {
+		
+		int left = l;
+		while (l <= r && arr[left] == arr[l]) {
+			l++;
+		}
+		if (l > r) {
+			return 1;
+		}
+		int t;
+		int ret = 1 + mem[l][r];
+		for (int i = l; i <= r; i++) {
+			if (arr[i] == arr[left]) {
+				t = mem[l][i - 1];
+				while (i <= r && arr[i] == arr[left]) {
+					i++;
+				}
+				if (i < r) {
+					r += mem[i][r];
+				}
+				ret = Math.min(ret, 1 + t);
+			}
+		}
+		return ret;
+	}
+	
+	
+	//1572. 矩阵对角线元素的和
+	public int diagonalSum(int[][] mat) {
+		int len = mat.length;
+		int ret = 0;
+		if ((len & 1) > 0) {
+			ret -= mat[len / 2][len / 2];
+		}
+		for (int i = 0; i < len; i++) {
+			ret += mat[i][i];
+			ret += mat[i][len - 1 - i];
+		}
+		return ret;
+	}
+	
+	public List<String> braceExpansionII(String expression) {
+		char[] arr = expression.toCharArray();
+		List<String> strings = braceExpansionIISplit(arr, 0, arr.length - 1);
+		strings.sort(new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return o1.compareTo(o2);
+			}
+		});
+		return strings;
+	}
+	
+	private List<String> braceExpansionIISplit(char[] arr, int l, int r) {
+		int count = 0;
+		HashSet<String> ret = new HashSet<>();
+		for (int i = l; i <= r; i++) {
+			if (arr[i] == '{') {
+				count++;
+			} else if (arr[i] == '}') {
+				count--;
+			} else if (arr[i] == ',' && count == 0) {
+				ret.addAll(braceExpansionIIHelper(arr, l, i - 1));
+				l = i + 1;
+			}
+			if (i == r) {
+				ret.addAll(braceExpansionIIHelper(arr, l, r));
+			}
+		}
+		
+		return new ArrayList<>(ret);
+	}
+	
+	private Set<String> braceExpansionIIHelper(char[] arr, int l, int r) {
+		HashSet<String> cur = new HashSet<>(), next;
+		if (l == r) {
+			cur.add(arr[l] + "");
+			return cur;
+		}
+		int count = 0;
+		for (int i = l; i <= r; i++) {
+			if (arr[i] == '{') {
+				count++;
+			} else if (arr[i] == '}') {
+				count--;
+			}
+			if (count == 0 || i == r) {
+				List<String> list;
+				if (l + 1 <= i - 1) {
+					list = braceExpansionIISplit(arr, l + 1, i - 1);
+				} else {
+					list = new ArrayList<>();
+					list.add(arr[l] + "");
+				}
+				if (cur.isEmpty()) {
+					cur.addAll(list);
+				} else {
+					next = new HashSet<>();
+					for (String a : cur) {
+						for (String b : list) {
+							next.add(a + b);
+						}
+					}
+					cur = next;
+				}
+				l = i + 1;
+			}
+		}
+		return cur;
+	}
+	
 	//1577. 数的平方等于两数乘积的方法数
 	public int numTriplets(int[] nums1, int[] nums2) {
 		HashMap<Integer, Integer> a = new HashMap<>();
@@ -45,23 +188,24 @@ public class Test7 {
 	}
 	
 	private int numTripletsHelper(HashMap<Integer, Integer> a, HashMap<Integer, Integer> b) {
-		int ret = 0,t=0;
+		int ret = 0, t = 0;
 		for (Entry<Integer, Integer> ae : a.entrySet()) {
 			Integer key = ae.getKey();
 			Integer value = ae.getValue();
-			long x = (long)key * key;
+			long x = (long) key * key;
 			for (Entry<Integer, Integer> be : b.entrySet()) {
 				if (x % be.getKey() == 0) {
 					if (be.getKey().equals(key)) {
 						t += value * be.getValue() * (be.getValue() - 1) / 2;
 					} else {
-						ret += value * be.getValue() * b.getOrDefault((int)(x / be.getKey()), 0);
+						ret += value * be.getValue() * b.getOrDefault((int) (x / be.getKey()), 0);
 					}
 				}
 			}
 		}
-		return ret/2+t;
+		return ret / 2 + t;
 	}
+	
 	public class TreeNode {
 		
 		int val;
@@ -105,10 +249,11 @@ public class Test7 {
 				r++;
 			}
 		}
-		while (l<left.size()){
-			ret.add(left.get(l));l++;
+		while (l < left.size()) {
+			ret.add(left.get(l));
+			l++;
 		}
-		while (r<right.size()) {
+		while (r < right.size()) {
 			ret.add(right.get(r));
 			r++;
 		}
@@ -212,7 +357,6 @@ public class Test7 {
 		}
 		return ret;
 	}
-	
 	
 	
 	//1575. 统计所有可行路径
@@ -770,6 +914,7 @@ public class Test7 {
 		public TireNode(int val) {
 			this.val = val;
 		}
+		
 	}
 	
 	//1569. 将子数组重新排序得到同一个二叉查找树的方案数
