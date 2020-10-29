@@ -1850,7 +1850,9 @@ public class Test6 {
 		StringBuffer buffer = new StringBuffer();
 		for (Entry<String, Integer> entry : map.entrySet()) {
 			buffer.append(entry.getKey());
-			buffer.append(entry.getValue());
+			if(entry.getValue()>1) {
+				buffer.append(entry.getValue());
+			}
 		}
 		return buffer.toString();
 	}

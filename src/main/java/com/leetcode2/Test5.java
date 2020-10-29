@@ -41,7 +41,38 @@ public class Test5 {
 		Test5 test = new Test5();
 		System.out.println("".compareTo("0"));
 		System.out.println("1".compareTo("0"));
-		test.numberOfArithmeticSlices(new int[]{0,2000000000,-294967296});
+		test.reachingPoints1(6,5,11,16);
+	}
+	
+	
+	//780. 到达终点
+	public boolean reachingPoints1(int sx, int sy, int tx, int ty) {
+		return reachingPointsHelper1(sx, sy, tx, ty, new HashSet<Long>());
+	}
+	
+	private boolean reachingPointsHelper1(long sx, long sy, long tx, long ty, HashSet<Long> set) {
+		if (tx < sx || ty < sy || set.contains((tx << 32) + ty)) {
+			return false;
+		} else if (sx == tx) {
+			return (ty - sy) % sx == 0;
+		} else if (sy == ty) {
+			return (tx - sx) % sy == 0;
+		}
+		set.add((tx << 32) + ty);
+		if (tx < ty) {
+			long x = ty % tx;
+			ty = ((sy / tx) + 1) * tx + x;
+		} else if (tx > ty) {
+			long x = tx % ty;
+			tx = ((sx / ty) + 1) * ty + x;
+		}
+		if (reachingPointsHelper1(sx, sy, tx - ty, ty, set) || reachingPointsHelper1(sx, sy, tx,
+			ty - tx, set)) {
+			return true;
+		} else {
+			set.add((tx << 32) + ty);
+			return false;
+		}
 	}
 	//64. 最小路径和
 	public int minPathSum(int[][] grid) {
@@ -174,34 +205,7 @@ public class Test5 {
 		return ret == Integer.MAX_VALUE ? -1 : ret;
 	}
 	
-	//780. 到达终点
-	public boolean reachingPoints1(int sx, int sy, int tx, int ty) {
-		return reachingPointsHelper1(sx, sy, tx, ty, new HashSet<Long>());
-	}
 	
-	private boolean reachingPointsHelper1(long sx, long sy, long tx, long ty, HashSet<Long> set) {
-		if (tx < sx || ty < sy || set.contains((tx << 32) + ty)) {
-			return false;
-		} else if (sx == tx) {
-			return (ty - sy) % sx == 0;
-		} else if (sy == ty) {
-			return (sy - sx) % sy == 0;
-		}
-		if (tx < ty) {
-			long x = ty % tx;
-			ty = ((sy / tx) + 1) * tx + x;
-		} else if (tx > ty) {
-			long x = tx % ty;
-			tx = ((sx / ty) + 1) * ty + x;
-		}
-		if (reachingPointsHelper1(sx, sy, tx - ty, ty, set) || reachingPointsHelper1(sx, sy, tx,
-			ty - tx, set)) {
-			return true;
-		} else {
-			set.add((tx << 32) + ty);
-			return false;
-		}
-	}
 	
 	//780. 到达终点--超时
 	public boolean reachingPoints(int sx, int sy, int tx, int ty) {
