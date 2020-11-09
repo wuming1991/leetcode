@@ -31,67 +31,109 @@ public class Test8 {
 	
 	public static void main(String[] args) {
 		Test8 test = new Test8();
-		test.countEval("0&0&0&1^1|0",1);
+		test.minDeletionSize(new String[]{"babca","bbazb"});
 	}
+	
+	public int minDeletionSize(String[] A) {
+		int len = A.length;
+		char[][] mem = new char[len][];
+		for (int i = 0; i < len; i++) {
+			mem[i] = A[i].toCharArray();
+		}
+		int size = A[0].length();
+		int[] ret = new int[size];
+		Arrays.fill(ret,1);
+		int res=1;
+		for (int i = 1; i < size; i++) {
+			for (int j = 0; j < i; j++) {
+				if(minDeletionSizeHelper(mem,i,j)){
+					ret[i]=Math.max(ret[i],ret[j]+1);
+				}
+			}
+			res=Math.max(res,ret[i]);
+		}
+		return size-res;
+	}
+	
+	private boolean minDeletionSizeHelper(char[][] mem, int x, int y) {
+		int len = mem.length;
+		for (int i = 0; i < len; i++) {
+			if(mem[i][x]<mem[i][y]){
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	//面试题 08.14. 布尔运算
 	public int countEval(String s, int result) {
 		int len = s.length();
 		int nlen = (len + 1) / 2;
 		char c;
 		int[][][] mem = new int[nlen][nlen][2];
-		for (int i = 0; i < len; i+=2) {
-			mem[i/2][i/2][s.charAt(i)-'0']=1;
+		for (int i = 0; i < len; i += 2) {
+			mem[i / 2][i / 2][s.charAt(i) - '0'] = 1;
 		}
 		for (int i = 1; i < nlen; i++) {
-			for (int j = 0; j+i <nlen ; j++) {
-				for (int k = j; k <j+i ; k++) {
-					c=s.charAt(k*2+1);
-					if(c=='|'){
-						mem[j][j+i][0]+=mem[j][k][0]*mem[k+1][j+i][0];
-						mem[j][j+i][1]+=mem[j][k][1]*mem[k+1][j+i][0]+mem[j][k][0]*mem[k+1][j+i][1]+mem[j][k][1]*mem[k+1][j+i][1];
-					}else if(c=='&'){
-						mem[j][j+i][0]+=mem[j][k][1]*mem[k+1][j+i][0]+mem[j][k][0]*mem[k+1][j+i][1]+mem[j][k][0]*mem[k+1][j+i][0];
-						mem[j][j+i][1]+=mem[j][k][1]*mem[k+1][j+i][1];
-					}else{
-						mem[j][j+i][0]+=mem[j][k][1]*mem[k+1][j+i][1]+mem[j][k][0]*mem[k+1][j+i][0];
-						mem[j][j+i][1]+=mem[j][k][1]*mem[k+1][j+i][0]+mem[j][k][0]*mem[k+1][j+i][1];
+			for (int j = 0; j + i < nlen; j++) {
+				for (int k = j; k < j + i; k++) {
+					c = s.charAt(k * 2 + 1);
+					if (c == '|') {
+						mem[j][j + i][0] += mem[j][k][0] * mem[k + 1][j + i][0];
+						mem[j][j + i][1] +=
+							mem[j][k][1] * mem[k + 1][j + i][0] + mem[j][k][0] * mem[k + 1][j
+								+ i][1] + mem[j][k][1] * mem[k + 1][j + i][1];
+					} else if (c == '&') {
+						mem[j][j + i][0] +=
+							mem[j][k][1] * mem[k + 1][j + i][0] + mem[j][k][0] * mem[k + 1][j
+								+ i][1] + mem[j][k][0] * mem[k + 1][j + i][0];
+						mem[j][j + i][1] += mem[j][k][1] * mem[k + 1][j + i][1];
+					} else {
+						mem[j][j + i][0] +=
+							mem[j][k][1] * mem[k + 1][j + i][1] + mem[j][k][0] * mem[k + 1][j
+								+ i][0];
+						mem[j][j + i][1] +=
+							mem[j][k][1] * mem[k + 1][j + i][0] + mem[j][k][0] * mem[k + 1][j
+								+ i][1];
 					}
 				}
 			}
 		}
-		return mem[0][nlen-1][result];
+		return mem[0][nlen - 1][result];
 	}
+	
 	public int smallestDistancePair(int[] nums, int k) {
 		Arrays.sort(nums);
-		int l=0,r = 1000000;
-		int  m;
+		int l = 0, r = 1000000;
+		int m;
 		long x;
-		while (l<r) {
-			m=(l+r)/2;
-			x=smallestDistancePairHelper(nums,m,k);
-			if(x>k){
-				r=m;
-			}else if(x<k){
-				l=m+1;
-			}else{
+		while (l < r) {
+			m = (l + r) / 2;
+			x = smallestDistancePairHelper(nums, m, k);
+			if (x > k) {
+				r = m;
+			} else if (x < k) {
+				l = m + 1;
+			} else {
 				return m;
 			}
 		}
 		return l;
 	}
 	
-	private long smallestDistancePairHelper(int[] nums, int m,int k) {
-		int l=0,r=0;long ret=0;
-		int len=nums.length;
-		while (l<len){
-			if(r<=l){
-				r=l+1;
+	private long smallestDistancePairHelper(int[] nums, int m, int k) {
+		int l = 0, r = 0;
+		long ret = 0;
+		int len = nums.length;
+		while (l < len) {
+			if (r <= l) {
+				r = l + 1;
 			}
-			while (r<len&&nums[r]-nums[l]<=m){
+			while (r < len && nums[r] - nums[l] <= m) {
 				r++;
 			}
-			ret+=r-1-l;
-			if(ret>k){
+			ret += r - 1 - l;
+			if (ret > k) {
 				return ret;
 			}
 			l++;

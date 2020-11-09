@@ -29,116 +29,512 @@ public class Test2 {
 	
 	public static void main(String[] args) throws Exception {
 		Test2 test = new Test2();
-		 test.generateParenthesis(3);
+		//test.nthMagicalNumber(5,3,2);
 	}
+	
+	
+	
+	
+	class Node {
+		public int val;
+		public Node left;
+		public Node right;
+		
+		public Node() {}
+		
+		public Node(int _val) {
+			val = _val;
+		}
+		
+		public Node(int _val,Node _left,Node _right) {
+			val = _val;
+			left = _left;
+			right = _right;
+		}
+	};
+	public Node treeToDoublyList1(Node root) {
+		Node head = new Node(0);
+		Node tail=treeToDoublyList1Helper(head,root);
+		Node ret=head.right;
+		ret.left=tail;
+		tail.right=ret;
+		return ret;
+	}
+	
+	private Node treeToDoublyList1Helper(Node head, Node root) {
+		Node tail;
+		if(root.left==null){
+			head.right=root;
+			root.left=head;
+			tail=root;
+		}else{
+			tail=treeToDoublyList1Helper(head,root.left);
+			tail.right=root;
+			root.left=tail;
+			tail=root;
+		}
+		if(root.right!=null){
+			tail =treeToDoublyList1Helper(root,root.right);
+		}
+		return tail;
+	}
+	
+	public Node treeToDoublyList(Node root) {
+		Node[] ht=treeToDoublyListHelper(root);
+		ht[0].left=ht[1];
+		ht[1].right=ht[0];
+		return ht[0];
+	}
+	
+	private Node[] treeToDoublyListHelper(Node root) {
+		Node[] ret,before,after;
+		if(root.left==null&&root.right==null){
+			ret = new Node[2];
+			ret[0]=root;
+			ret[1]=root;
+			ret[0].right=ret[1];
+			ret[1].left=ret[0];
+			return ret;
+		}else if(root.left!=null&&root.right!=null){
+			before=treeToDoublyListHelper(root.left);
+			before[1].right=root;
+			root.left=before[1];
+			after=treeToDoublyListHelper(root.right);
+			root.right=after[0];
+			after[0].left=root;
+			before[1]=after[1];
+			return before;
+		}else if(root.left!=null){
+			before=treeToDoublyListHelper(root.left);
+			before[1].right=root;
+			root.left=before[1];
+			before[1]=root;
+			return before;
+		}else {
+			after=treeToDoublyListHelper(root.right);
+			root.right=after[0];
+			after[0].left=root;
+			after[0]=root;
+			return after;
+		}
+	}
+	
+	//127. 单词接龙
+	public int ladderLength(String beginWord, String endWord, List<String> wordList) {
+		if(beginWord.equals(endWord)){
+			return 0;
+		}
+		HashSet<String> cur = new HashSet<>(),next;
+		cur.add(beginWord);
+		HashSet<String> last = new HashSet<>();
+		last.addAll(wordList);
+		if(!last.contains(endWord)){
+			return 0;
+		}
+		int ret=0;
+		char c;
+		String t;
+		while (!cur.isEmpty()){
+			next=new HashSet<>();
+			ret++;
+			for (String s : cur) {
+				char[] arr = s.toCharArray();
+				for (int i = 0; i < arr.length; i++) {
+					c=arr[i];
+					for (int j = 0; j < 26; j++) {
+						arr[i]=(char)('a'+j);
+						t=new String(arr);
+						if(t.equals(endWord)){
+							return ret;
+						}
+						if(last.contains(t)){
+							next.add(t);
+							last.remove(t);
+						}
+					}
+					arr[i]=c;
+				}
+			}
+			cur=next;
+		}
+		return ret;
+	}
+	//1643. 第 K 条最小指令
+	public String kthSmallestPath(int[] destination, int k) {
+		int[][] mem = new int[destination[0]+1][destination[1]+1];
+		Arrays.fill(mem[0],1);
+		for (int i = 0; i <= destination[0]; i++) {
+			mem[i][0]=1;
+		}
+		for (int i = 1; i <= destination[0]; i++) {
+			for (int j = 1; j <=destination[1]; j++) {
+				mem[i][j]=mem[i-1][j]+mem[i][j-1];
+			}
+		}
+		int v=destination[0],h=destination[1],t=h+v;
+		StringBuffer ret = new StringBuffer();
+		while (h>0&&v>0){
+			if(mem[v][h-1]>=k){
+				ret.append('H');
+				h--;
+			}else{
+				ret.append('V');
+				k-=mem[v][h-1];
+				v--;
+			}
+		}
+		while (h>0){
+			ret.append('H');h--;
+		}
+		while (v>0){
+			ret.append('V');v--;
+		}
+		return ret.toString();
+	}
+	public int maxChunksToSorted1(int[] arr) {
+		int len = arr.length;
+		int[] copy = Arrays.copyOfRange(arr, 0, len);
+		Arrays.sort(copy);
+		TreeMap<Integer, LinkedList<Integer>> map = new TreeMap<>();
+		for (int i = 0; i < len; i++) {
+			if(!map.containsKey(arr[i])){
+				map.put(arr[i],new LinkedList<>());
+			}
+			map.get(arr[i]).add(i);
+		}
+		int ret=0,left,v=0;
+		HashSet<Integer> set = new HashSet<>();
+		LinkedList<Integer> list;
+		for (int i = len-1; i >=0 ; i--) {
+			left=map.get(copy[i]).getLast();
+			set.add(copy[i]);
+			while (i>left){
+				i--;
+				left=map.get(copy[i]).getLast();
+				for (Integer x : set) {
+					list = map.get(x);
+					if(!list.isEmpty()){
+						list.removeLast();
+						if(!list.isEmpty()){
+							left=Math.min(list.getLast(),left);
+						}
+					}
+				}
+				set.add(copy[i]);
+			}
+			ret++;
+			map.get(v).removeLast();
+			set.clear();
+		}
+		return ret;
+	}
+	//768. 最多能完成排序的块 II--超时
+	int maxChunksToSorted=1;
+	public int maxChunksToSorted(int[] arr) {
+		int len = arr.length;
+		int[] copy = Arrays.copyOfRange(arr, 0, len);
+		Arrays.sort(copy);
+		  maxChunksToSortedHelper(arr,copy, len-1,0);
+		  return maxChunksToSorted;
+	}
+	
+	private void maxChunksToSortedHelper(int[] arr, int[] copy, int idx,int count) {
+		if(idx<0){
+			maxChunksToSorted=Math.max(count,maxChunksToSorted);
+			return;
+		}
+		int max=copy[idx],cmin=arr[idx],cmax=cmin;
+		for (int i = idx; i >=0 ; i--) {
+			cmin=Math.min(cmin,arr[i]);
+			cmax=Math.max(cmax,arr[i]);
+			if(cmax==max&&copy[i]==cmin){
+				maxChunksToSortedHelper(arr,copy,i-1,count+1);
+			}else if(arr[i]>max){
+				return;
+			}
+		}
+		maxChunksToSorted=Math.max(count,maxChunksToSorted);
+	}
+	
+	//1642. 可以到达的最远建筑
+	public int furthestBuilding(int[] heights, int bricks, int ladders) {
+		PriorityQueue<Integer> queue = new PriorityQueue<>((a,b)->(b-a));
+		int len = heights.length;
+		for (int i = 0; i < len - 1; i++) {
+			int x = heights[i + 1] - heights[i];
+			if (x > 0) {
+				bricks-=x;
+				queue.add(x);
+				while (bricks<0&&ladders>0){
+					bricks+=queue.poll();
+					ladders--;
+				}
+				if(bricks<0){
+					return i;
+				}
+			}
+		}
+		return len - 1;
+	}
+	
+	//1641. 统计字典序元音字符串的数目
+	public int countVowelStrings(int n) {
+		int a = 1, e = 1, i = 1, o = 1, u = 1;
+		for (int j = 1; j < n; j++) {
+			e+=a;
+			i+=e;
+			o+=i;
+			u+=o;
+			/* 等价
+			u += a + e + i + o;
+			o += a + e + i;
+			i += a + e;
+			e += a;
+			*/
+		}
+		return a + e + i + o + u;
+	}
+	
+	//1640. 能否连接形成数组
+	public boolean canFormArray(int[] arr, int[][] pieces) {
+		HashMap<Integer, List<Integer>> map = new HashMap<>();
+		int len = 0;
+		for (int i = 0; i < pieces.length; i++) {
+			if (!map.containsKey(pieces[i][0])) {
+				map.put(pieces[i][0], new ArrayList<>());
+			}
+			map.get(pieces[i][0]).add(i);
+			len += pieces[i].length;
+		}
+		if (len != arr.length) {
+			return false;
+		}
+		return canFormArrayHelper(arr, pieces, map, new boolean[pieces.length], 0);
+	}
+	
+	private boolean canFormArrayHelper(int[] arr, int[][] pieces,
+		HashMap<Integer, List<Integer>> map, boolean[] booleans, int idx) {
+		if (idx == arr.length) {
+			return true;
+		}
+		int val = arr[idx], i, len;
+		for (Integer x : map.get(val)) {
+			if (booleans[x]) {
+				continue;
+			}
+			booleans[x] = true;
+			len = pieces[x].length;
+			for (i = 1; i < len; i++) {
+				if (arr[idx + i] != pieces[x][i]) {
+					break;
+				}
+			}
+			if (i == len && canFormArrayHelper(arr, pieces, map, booleans, idx + len)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	//1639. 通过给定词典构造目标字符串的方案数
+	public int numWays(String[] words, String target) {
+		int len = words[0].length();
+		int[][] mem = new int[26][len];
+		for (String word : words) {
+			for (int i = 0; i < len; i++) {
+				mem[word.charAt(i) - 'a'][i]++;
+			}
+		}
+		int length = target.length();
+		int[][] ret = new int[length + 1][len];
+		long sum = 1, mod = 1000000007, x;
+		int c;
+		for (int i = 1; i <= length; i++) {
+			c = target.charAt(i - 1) - 'a';
+			for (int j = 0; j < len; j++) {
+				ret[i][j] = (int) (sum * mem[c][j] % mod);
+				sum += ret[i - 1][j];
+				sum %= mod;
+			}
+			sum = 0;
+		}
+		for (int i = 0; i < len; i++) {
+			sum += ret[length][i];
+		}
+		return (int) (sum % mod);
+	}
+	
+	//5539. 按照频率将数组升序排序
+	public int[] frequencySort(int[] nums) {
+		int[][] mem = new int[201][2];
+		for (int i = 0; i < 201; i++) {
+			mem[i][0] = i - 100;
+		}
+		for (int num : nums) {
+			mem[num + 100][1]++;
+		}
+		Arrays.sort(mem, (a, b) -> (a[1] == b[1] ? a[0] - b[0] : a[1] - b[1]));
+		int[] ret = new int[nums.length];
+		int idx = 0;
+		for (int i = 0; i < 201; i++) {
+			while (mem[i][1] > 0) {
+				ret[idx] = mem[i][0];
+				idx++;
+				mem[i][1]--;
+			}
+		}
+		return ret;
+	}
+	
+	//5540. 两点之间不包含任何点的最宽垂直面积
+	public int maxWidthOfVerticalArea(int[][] points) {
+		Arrays.sort(points, (a, b) -> (a[0] - b[0]));
+		int ret = 0, l = points[0][0];
+		int len = points.length;
+		for (int i = 0; i < len; i++) {
+			ret = Math.max(ret, points[i][0] - l);
+			l = points[i][0];
+		}
+		return ret;
+	}
+	
+	//857. 雇佣 K 名工人的最低成本
+	public double mincostToHireWorkers(int[] quality, int[] wage, int K) {
+		int len = quality.length;
+		double[][] mem = new double[len][2];
+		for (int i = 0; i < len; i++) {
+			mem[i][1] = quality[i];
+			mem[i][0] = (double) wage[i] / quality[i];
+		}
+		Arrays.sort(mem, (a, b) -> (Double.compare(a[0], b[0])));
+		PriorityQueue<Integer> queue = new PriorityQueue<>((a, b) -> (b - a));
+		double ret = Double.MAX_VALUE;
+		int count = 0;
+		for (int i = 0; i < len; i++) {
+			count += mem[i][1];
+			queue.add((int) mem[i][1]);
+			if (queue.size() > K) {
+				count -= queue.poll();
+				ret = Math.min(ret, count * mem[i][0]);
+			} else if (queue.size() == K) {
+				ret = Math.min(ret, count * mem[i][0]);
+			}
+		}
+		return ret;
+	}
+	
 	//面试题 05.07. 配对交换
 	public int exchangeBits(int num) {
-		 int a=1,b=2;
-		 int ret=0;
-		 int base=1,x,y;
-		 while (num>0){
-		 	x=a&num;
-		 	y=b&num;
-		 	ret+=y*base;
-			 base<<=1;
-		 	ret+=x*base;
-			 base<<=1;
-		 	num>>=2;
-		 }
-		 return ret;
+		int a = 1, b = 2;
+		int ret = 0;
+		int base = 1, x, y;
+		while (num > 0) {
+			x = a & num;
+			y = b & num;
+			ret += y * base;
+			base <<= 1;
+			ret += x * base;
+			base <<= 1;
+			num >>= 2;
+		}
+		return ret;
 	}
+	
 	//面试题 08.09. 括号
 	public List<String> generateParenthesis(int n) {
 		StringBuffer buffer = new StringBuffer();
 		ArrayList<String> ret = new ArrayList<>();
-		generateParenthesisHelper(ret,buffer,n,n);
+		generateParenthesisHelper(ret, buffer, n, n);
 		return ret;
 	}
 	
 	private void generateParenthesisHelper(ArrayList<String> ret, StringBuffer buffer, int l,
 		int r) {
-		if(l>r){
+		if (l > r) {
 			return;
 		}
-		if(l==0&&r==0){
+		if (l == 0 && r == 0) {
 			ret.add(buffer.toString());
 		}
-		if(l>0){
-			buffer.append("(");
-			generateParenthesisHelper(ret,buffer,l-1,r);
-			buffer.deleteCharAt(buffer.length()-1);
+		if (l > 0) {
+			buffer.append("(" );
+			generateParenthesisHelper(ret, buffer, l - 1, r);
+			buffer.deleteCharAt(buffer.length() - 1);
 		}
-		if(r>0){
-			buffer.append(")");
-			generateParenthesisHelper(ret,buffer,l,r-1);
-			buffer.deleteCharAt(buffer.length()-1);
+		if (r > 0) {
+			buffer.append(")" );
+			generateParenthesisHelper(ret, buffer, l, r - 1);
+			buffer.deleteCharAt(buffer.length() - 1);
 		}
 	}
+	
 	//5393. 可获得的最大点数
 	public int maxScore(int[] cardPoints, int k) {
 		int len = cardPoints.length;
-		int last=len-k;
-		if(last==0){
-			int ret=0;
+		int last = len - k;
+		if (last == 0) {
+			int ret = 0;
 			for (int cardPoint : cardPoints) {
-				ret+=cardPoint;
+				ret += cardPoint;
 			}
 			return ret;
 		}
 		for (int i = 1; i < last; i++) {
-			cardPoints[i]+=cardPoints[i-1];
+			cardPoints[i] += cardPoints[i - 1];
 		}
-		int min=cardPoints[last-1];
+		int min = cardPoints[last - 1];
 		for (int i = last; i < len; i++) {
-			cardPoints[i]+=cardPoints[i-1];
-			min=Math.min(min,cardPoints[i]-cardPoints[i-last]);
+			cardPoints[i] += cardPoints[i - 1];
+			min = Math.min(min, cardPoints[i] - cardPoints[i - last]);
 		}
-		return cardPoints[len-1]-min;
+		return cardPoints[len - 1] - min;
 	}
+	
 	//5394. 对角线遍历 II
 	public int[] findDiagonalOrder1(List<List<Integer>> nums) {
-		int len = nums.size(),total=0;
+		int len = nums.size(), total = 0;
 		int[] mem = new int[len];
 		for (int i = 0; i < len; i++) {
-			mem[i]=nums.get(i).size();
-			total+=mem[i];
+			mem[i] = nums.get(i).size();
+			total += mem[i];
 		}
 		int[] ret = new int[total];
-		int idx,l;
+		int idx, l;
 		for (int i = 0; i < len; i++) {
 			for (int j = 0; j < nums.get(i).size(); j++) {
-				l=Math.min(len-1,i+j);
-				idx=0;
-				for (int k = l,x=i+j<len?1:(i+j-len+2); k >=0 ; k--,x++) {
-					if(k>i){
-						idx+=Math.min(x,mem[k]);
-					}else{
-						idx+=Math.min(x-1,mem[k]);
+				l = Math.min(len - 1, i + j);
+				idx = 0;
+				for (int k = l, x = i + j < len ? 1 : (i + j - len + 2); k >= 0; k--, x++) {
+					if (k > i) {
+						idx += Math.min(x, mem[k]);
+					} else {
+						idx += Math.min(x - 1, mem[k]);
 					}
 				}
-				ret[idx++]=nums.get(i).get(j);
+				ret[idx++] = nums.get(i).get(j);
 			}
 		}
 		return ret;
 	}
+	
 	public int[] findDiagonalOrder(List<List<Integer>> nums) {
 		int len = nums.size();
 		int[] mem = new int[len];
 		int[] last = new int[len];
-		int total=0,t;
+		int total = 0, t;
 		for (int i = 0; i < len; i++) {
-			mem[i]=-i;
-			t=nums.get(i).size();
-			total+=t;
-			last[i]=t;
+			mem[i] = -i;
+			t = nums.get(i).size();
+			total += t;
+			last[i] = t;
 		}
-		int idx=0;
+		int idx = 0;
 		int[] ret = new int[total];
-		while (idx<total){
-			for (int i =len-1; i>=0; i--) {
-				if(last[i]>0){
-					if(mem[i]>=0){
-						ret[idx++]=nums.get(i).get(mem[i]);
+		while (idx < total) {
+			for (int i = len - 1; i >= 0; i--) {
+				if (last[i] > 0) {
+					if (mem[i] >= 0) {
+						ret[idx++] = nums.get(i).get(mem[i]);
 						last[i]--;
 					}
 					mem[i]++;
@@ -147,45 +543,48 @@ public class Test2 {
 		}
 		return ret;
 	}
+	
 	//5392. 分割字符串的最大得分
 	public int maxScore(String s) {
 		int len = s.length();
 		int[] mem = new int[len];
-		int count=0;
+		int count = 0;
 		for (int i = 0; i < len; i++) {
-			count+=s.charAt(i)=='0'?1:0;
-			mem[i]=count;
+			count += s.charAt(i) == '0' ? 1 : 0;
+			mem[i] = count;
 		}
-		int ret =len-count;
+		int ret = len - count;
 		for (int i = 0; i < len; i++) {
-			ret= Math.max(ret,mem[i]+len-count-(i+1-mem[i]));
+			ret = Math.max(ret, mem[i] + len - count - (i + 1 - mem[i]));
 		}
 		return ret;
 	}
+	
 	//23. 合并K个排序链表
 	public ListNode mergeKLists(ListNode[] lists) {
-		PriorityQueue<ListNode> queue = new PriorityQueue<>((a,b)->(a.val-b.val)) ;
+		PriorityQueue<ListNode> queue = new PriorityQueue<>((a, b) -> (a.val - b.val));
 		for (ListNode list : lists) {
-			if(list!=null){
+			if (list != null) {
 				queue.add(list);
 			}
 		}
-		if(queue.size()<1){
+		if (queue.size() < 1) {
 			return null;
 		}
-		ListNode head = queue.poll(),next,cur=head;
-		while (queue.size()>0){
-			next=cur.next;
-			cur.next=null;
-			if(next!=null){
+		ListNode head = queue.poll(), next, cur = head;
+		while (queue.size() > 0) {
+			next = cur.next;
+			cur.next = null;
+			if (next != null) {
 				queue.add(next);
 			}
 			ListNode poll = queue.poll();
-			cur.next=poll;
-			cur=cur.next;
+			cur.next = poll;
+			cur = cur.next;
 		}
 		return head;
 	}
+	
 	//LCP 09. 最小跳跃次数--超时间
 	public int minJump1(int[] jump) {
 		int len = jump.length;
@@ -194,18 +593,18 @@ public class Test2 {
 		count[0] = 0;
 		int r, c, ret = Integer.MAX_VALUE, maxr = 0, maxl = -1;
 		HashMap<Integer, Integer> map = new HashMap<>();
-		for (int i = 0; i <len; i++) {
-			if(!map.containsKey(count[i])){
-				map.put(count[i],i);
+		for (int i = 0; i < len; i++) {
+			if (!map.containsKey(count[i])) {
+				map.put(count[i], i);
 			}
 			r = i + jump[i];
 			if (r >= len) {
 				ret = Math.min(ret, count[i] + 1);
-			} else  {
+			} else {
 				maxr = r;
-				count[r] =Math.min(count[r],count[i] + 1);
+				count[r] = Math.min(count[r], count[i] + 1);
 				c = count[r] + 1;
-				maxl=map.getOrDefault(c+1,i);
+				maxl = map.getOrDefault(c + 1, i);
 				for (int j = r - 1; j >= maxl; j--) {
 					if (count[j] > c) {
 						count[j] = c;
@@ -843,7 +1242,7 @@ public class Test2 {
 		int[] mem = new int[len];
 		Arrays.fill(mem, Integer.MIN_VALUE);
 		stoneGameIIIHelper(stoneValue, mem, 0);
-		return mem[0] == 0 ? "Tie" : (mem[0] > 0 ? "Alice" : "Bob");
+		return mem[0] == 0 ? "Tie" : (mem[0] > 0 ? "Alice" : "Bob" );
 	}
 	
 	private int stoneGameIIIHelper(int[] stoneValue, int[] mem, int i) {
@@ -1868,7 +2267,7 @@ public class Test2 {
 	
 	//交换两个integer的值
 	private static void swap(Integer a, Integer b) throws Exception {
-		Field value = Integer.class.getDeclaredField("value");
+		Field value = Integer.class.getDeclaredField("value" );
 		value.setAccessible(true);
 		Integer t = new Integer(a.intValue());
 		value.set(a, b.intValue());
